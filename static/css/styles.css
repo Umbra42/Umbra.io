@@ -1,0 +1,173 @@
+body, html {
+    margin: 0;
+    height: 100%;
+    font-family: Arial, sans-serif;
+    background-color: #424242;
+    color: #8E74A4;
+
+}
+
+.container {
+    display: grid;
+    margin-right: auto;
+    margin-left: auto;
+    width: 80%;
+    grid-template-columns: 2fr 5fr;
+    grid-template-rows: 2fr 5fr;
+    height: 100vh;
+}
+
+.page-container {
+    margin-left: 2%;
+    margin-right: 2%;
+}
+
+@media (min-width: 768px) {
+    .page-container {
+        margin-left: 10%;
+        margin-right: 10%;
+    }
+}
+
+.nav-container {
+    display: grid;
+    grid-template-columns: auto;
+    grid-template-rows:2fr 3fr;
+    height: 100vh;
+}
+
+.graph-view {
+    grid-column: 1;
+    grid-row: 1;
+    border: 1px solid black;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.list-view {
+    grid-column: 1;
+    grid-row: 2;
+    border: 1px solid black;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.text-container {
+    display: grid;
+    grid-template-columns:auto;
+    grid-template-rows: 12.5% 20%;
+    height: 100vh;
+}
+
+.info-container {
+    display: flex;
+    justify-content:flex-end;
+}
+
+.info {
+    flex: 1;
+    border: 1px solid black;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    list-style-type: none;
+    padding-left: 0;
+    margin-left: auto; /*maybe need more complexity*/
+}
+
+.header-text {
+    flex: 1;
+    border: 1px solid black;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 45px 45px;
+}
+
+.about-me {
+    flex: 1;
+    display: flex;
+    flex-direction: column; /* Align children vertically */
+    justify-content: center;
+    text-align:center;
+    align-items: center;
+    padding: 45px 45px;
+}
+
+.tabnav {
+    flex:1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-right: auto;
+    margin-left: auto;
+    border-bottom: 2px solid #000;
+    flex-direction: row;
+    width: 80%;
+}
+
+.tabs {
+    flex: 1;
+    align-items: center;
+    text-align: center;
+    justify-content: center;
+}
+
+.centered-content {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-align: center; /* For centering text */
+    height: 100%; /* Adjust as needed */
+}
+
+.display-area {
+    flex: 3;
+    border: 1px solid black;
+    position: relative;
+    overflow-x: auto;
+    margin-top: auto;
+    margin-bottom: auto;
+    width: 100%;
+}
+
+.dial {
+    width: 30px;
+    height: 30px;
+    border: 3px solid #999;
+    border-radius: 50%;
+    border-top-color: transparent;
+    animation: spin 2s linear infinite;
+}
+
+@keyframes rotate {
+    0% {
+        transform: rotate(0deg);
+    }
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+
+
+#progressOverlay {
+    display: none; /* Hidden by default */
+    position: fixed; /* Stay in place */
+    z-index: 1; /* Sit on top */
+    left: 0;
+    top: 0;
+    width: 100%; /* Full width */
+    height: 100%; /* Full height */
+    overflow: auto; /* Enable scroll if needed */
+    background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+  }
+  #progressContent {
+    background-color: #fefefe;
+    margin: 15% auto; /* 15% from the top and centered */
+    padding: 20px;
+    border: 1px solid #888;
+    width: 80%; /* Could be more or less, depending on screen size */
+  }

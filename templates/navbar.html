@@ -1,0 +1,66 @@
+
+<!-- Navbar -->
+<nav class="navbar sticky-top navbar-expand-lg navbar-dark bg-dark">
+    <div class="container-fluid">
+        <!-- Navbar Brand -->
+        <a class="navbar-brand" href="/">
+            <img src="/static/img/logo.png" alt="logo" width="50" height="50">
+        </a>
+
+        <!-- Navbar Toggler -->
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        {% if session["user_id"] %}
+        <!-- Collapsible Navbar Content -->
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <div class="navbar-nav">
+                <button class="btn btn-primary" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasExample" aria-controls="offcanvasExample">
+                    <i class="fa-solid fa-circle-nodes"></i>
+                </button>
+            </div>
+            <!-- Right Aligned Links -->
+            <div class="navbar-nav ms-auto">
+                <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#staticBackdrop">
+                    upload
+                  </button>
+                <a class="nav-link" href="https://github.com/peobin?tab=repositories"><i class="fa-brands fa-github"></i></a>
+                <a class="nav-link" href="https://nl.linkedin.com/in/indra-pinas-924307247"><i class="fa-brands fa-linkedin"></i></a>
+                <a class="nav-link" href="https://discordapp.com/users/indra4242"><i class="fa-brands fa-discord"></i></a>
+            </div>
+
+
+        {% else %}
+            <div class="navbar-nav">
+                <a class="nav-link" href="/login">Base</a>
+            </div>
+            <!-- Right Aligned Links -->
+            <div class="navbar-nav ms-auto">
+                <a class="nav-link" href="https://github.com/peobin?tab=repositories"><i class="fa-brands fa-github"></i></a>
+                <a class="nav-link" href="https://nl.linkedin.com/in/indra-pinas-924307247"><i class="fa-brands fa-linkedin"></i></a>
+                <a class="nav-link" href="https://discordapp.com/users/indra4242"><i class="fa-brands fa-discord"></i></a>
+            </div>
+        {% endif %}
+        </div>
+    </div>
+</nav>
+<!-- Offcanvas Component -->
+<div class="offcanvas offcanvas-start" tabindex="-1" id="offcanvasExample" aria-labelledby="offcanvasExampleLabel">
+    <div class="offcanvas-header">
+        <h5 class="offcanvas-title" id="offcanvasExampleLabel">Offcanvas Title</h5>
+        <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+    </div>
+    <div class="offcanvas-body">
+        <div class="graph-view">Graph View</div>
+        <div class="list-view">
+            <th>List View</th>
+            <tr>
+                <td><a href="./contact.html">contact.html</a></td>
+                <td><a href="./index.html">index.html</a></td>
+                <td><a href="./login.html">login.html</a></td>
+            </tr>
+        </div>
+    </div>
+    <!-- Content for the offcanvas goes here -->
+</div>
