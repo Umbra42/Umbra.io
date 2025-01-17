@@ -1,6 +1,6 @@
 import os
 from Upload import commit, is_unique, make_folder
-from extensions import socketio
+from extensions import socketio, upload_tasks
 from flask import current_app
 from blueprints.blender import convert, check_blender
 
@@ -16,7 +16,9 @@ def init_blender(app):
 
 def start_upload(app, upload_progress, task_id, N_upload_files, upload_folder, file_paths):
     with app.app_context():
+        upload_tasks[task_id] = upload_progress
         socketio.emit('progress_update', upload_progress)
+        
         print(f" > start_upload called with:\n task_id:{task_id}, \n N_upload_files:{N_upload_files}, \n upload_folder:{upload_folder}, \n file_paths:{file_paths}")
 
         upload_progress['status'] = 'Indexing files...'

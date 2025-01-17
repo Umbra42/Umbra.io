@@ -28,11 +28,10 @@ def get_paths(upload_files, upload_folder):
 
 def is_unique(path):
     with current_app.app_context():
-        print(" > is_unipue called")
+        print(" > is_unique called")
         print("check for file duplicates")
         file_name = os.path.basename(path)
-        cursor = db.execute("SELECT * FROM files WHERE name = ?", (file_name))
-        database = cursor.fetchall()
+        database = db.execute("SELECT * FROM files WHERE name = ?", (file_name))
         print(database)
         print(path)
         print(os.path.exists(path))
