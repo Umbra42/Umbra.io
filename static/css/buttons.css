@@ -1,4 +1,5 @@
-#uploadNavBtn {
+.navBtn {
+    border-radius: 18px;
     background-color: #8e74aa;
     color: #490081;
     border: none;
@@ -9,5 +10,64 @@
     display: inline-block;
     font-size: 16px;
     margin: 4px 2px;
-    transition-duration: 0.4s;
+    transition: color 0.4s ease;
+}
+
+.navBtn:hover {
+    color: #ff6f00;
+}
+
+/* Individual Tab Buttons */
+.tab-btn {
+    border-radius: 18px;
+    flex: 1; /* Equal spacing for all buttons */
+    align-items: center;
+    text-align: center;
+    justify-content: center;
+    padding: 10px 20px;
+    cursor: pointer;
+    border: none;
+    background: none;
+    outline: none;
+    font-size: 16px;
+    transition: background-color 0.3s ease;
+}
+
+.tab-btn.active {
+    border-radius: 18px;
+    background-color: #8e74aa;
+    color: #490081;
+    border-radius: 5px 5px 0 0;
+}
+
+.modalBtn {
+    border-radius: 18px;
+    background-color: #8e74aa;
+    color: #490081;
+    border: none;
+    cursor: pointer;
+    padding: 10px 24px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 16px;
+    margin: 4px 2px;
+    transition: color 0.4s ease;
+}
+
+.modalBtn:hover {
+    color: #ff6f00;
+}
+
+/* Container for Tab Buttons */
+.tab-buttons {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-bottom: 2px solid #000;
+    margin-bottom: 10px;
+    flex-direction: row;
+    width: 80%;
+    margin: 0 auto; /* Centers the tab buttons */
 }

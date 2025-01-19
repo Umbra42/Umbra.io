@@ -93,7 +93,11 @@
     display: block;
   }
 
-  
+  .modal-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+  }
 /* bootstrap modal css
 .modal {
     background-color: #424242;
