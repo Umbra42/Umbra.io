@@ -1,0 +1,63 @@
+
+<!-- Navbar -->
+<nav class="navbar">
+    <div class="navbar-container">
+        <button class="navbar-toggler" id="navTogglerBtn">
+            ☰
+        </button>
+        {% if not session["user_id"] %}
+        <div class="navbar-left">
+            <!-- render logo as login button istead of / ref -->
+            <a href="/auth/login" class="navbar-brand">
+                <img src="/static/img/logo.png" alt="logo" class="navbar-logo">
+            </a>
+            <!-- with site map as button next to logo -->
+            {%if not page == 'login'%}
+                <button class="navBtn" id="openCanvasBtn">
+                    <i class="fas fa-folder"></i> Map
+                </button>
+            {%endif%}
+        </div>
+        <div class="navbar-center">
+        </div>
+        <div class="navbar-right">
+            <!-- allign all media links to the rigt of nav bar -->
+            <div class="navbar-links" id="navbar-links">
+                <a class="navbar-link" href="https://github.com/Umbra42?tab=repositories"><i class="fa-brands fa-github"></i></a>
+                <a class="navbar-link" href="https://nl.linkedin.com/in/indra-pinas-924307247"><i class="fa-brands fa-linkedin"></i></a>
+                <a class="navbar-link" href="https://discordapp.com/users/indra4242"><i class="fa-brands fa-discord"></i></a>
+            </div>
+        </div>
+        {% else %}
+        <div class="navbar-left">
+            <!-- render logo as /href -->
+            <a href="/" class="navbar-brand">
+                <img src="/static/img/logo.png" alt="logo" class="navbar-logo">
+            </a>
+             <!-- with site map as button next to logo and upload button as the right most element-->
+             {%if not page == 'login'%}
+             <button class="navBtn" id="openCanvasBtn">
+                 <i class="fas fa-folder"></i> Map
+             </button>
+            {%endif%}
+        </div>
+        <div class="navbar-center">
+            {%include 'BASE.html'%}
+        </div>
+        <div class="navbar-right">
+            <!-- allign all media links to the right of nav bar -->
+            <div class="navbar-links" id="navbar-links">
+                <a class="navbar-link" href="https://github.com/peobin?tab=repositories"><i class="fa-brands fa-github"></i></a>
+                <a class="navbar-link" href="https://nl.linkedin.com/in/indra-pinas-924307247"><i class="fa-brands fa-linkedin"></i></a>
+                <a class="navbar-link" href="https://discordapp.com/users/indra4242"><i class="fa-brands fa-discord"></i></a>
+            </div>
+            <button id="uploadNavBtn" class="navBtn">
+                upload
+            </button>
+        </div>
+        {% endif %}
+        {% include 'mapCanvas.html' %}
+        </div>
+    </div>
+</nav>
+

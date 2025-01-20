@@ -17,7 +17,7 @@ def register_blueprints(app):
 
     app.register_blueprint(auth_bp, url_prefix="/auth")
     app.register_blueprint(main_bp, url_prefix="/")
-    app.register_blueprint(upload_bp, url_prefix="/files")
+    app.register_blueprint(upload_bp, url_prefix="/upload")
     app.register_blueprint(blender_bp, url_prefix="/blender")
 
 
