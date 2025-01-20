@@ -3,7 +3,7 @@
     <div class="modal-content">
         <span class="close" id="closeModal">&times;</span>
         <h2>Upload Files</h2>
-        <form id="uploadForm" action="/upload" method="post" enc="multipart/form-data">
+        <form id="uploadForm">
             <div id="progressContainer">
               <h5>File Upload Progress: </h5>
                 <div class="current-task">
@@ -34,8 +34,8 @@
                 </div>
             </div>
             <div class="modal-buttons">
-                <input type="file" id="fileInput" class="modalBtn" name="files" multiple />
-                <button id="uploadModalBtn" class="modalBtn">Start Upload</button>
+                <input type="file" id="fileInput" class="modalBtn" name="files" required multiple />
+                <button id ="uploadModalBtn" class="modalBtn">Start Upload</button>
             </div>
             <p>The contents uploaded will be displayed on both the admin site and the guest site</p>
         </form>
