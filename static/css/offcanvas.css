@@ -1,56 +1,92 @@
 /* Offcanvas Style */
 .offcanvas {
     position: fixed;
-    top: 0;
-    left: 0;
+    top: 60px;
+    left: -300px;
     width: 300px;
-    height: 100%;
+    height: 100vh;
     background-color: #343a40;
     color: #8e74aa;
-    box-shadow: 2px 0 8px rgba(0, 0, 0, 0.5);
-    z-index: 1050;
-    transform: translateX(-100%);
-    transition: transform 0.3s ease-in-out;
+    z-index: 1500;
     display: flex;
     flex-direction: column;
+    overflow-y: auto;
+    transition: left 0.4s ease-in-out; 
 }
 
 .offcanvas.active {
-    transform: translateX(0);
-}
-
-.offcanvas-header {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    padding: 10px 15px;
-    background-color: #495057;
+    left: 0;
 }
 
 .offcanvas-body {
     flex: 1;
-    padding: 15px;
+    padding: 4px;
     align-items: center;
     justify-content: center;
     overflow-y: auto;
+    scroll-behavior: smooth;
+}
+
+.offcanvas-body::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+.offcanvas-body::-webkit-scrollbar-track {
+    background-color: transparent;
+    top: 8px;
+    border-radius: 3px;
+}
+.offcanvas-body::-webkit-scrollbar-thumb {
+    background-color: #8e74aa;
+    border-radius: 3px;
+}
+
+.graph-view::-webkit-scrollbar-thumb:hover {
+    overflow-y: auto;
+    background: #490081;
+}
+
+.graph-container {
+    position: sticky;
+    display: flex;
+    width: 100%;
+    height: 275px;
+    z-index: 1000;
+    background-color: #343a40;
 }
 
 .graph-view {
-    width: 100%;
-    height: 200px;
+    position: sticky;
+    display: flex;
+    width: 275px;
+    height: 275px;
     align-items: center;
     justify-content: center;
     background-color: #6c757d;
-    margin-bottom: 10px;
+    border: 1px solid black;
+    border-radius: 3px;
+    margin-left: 1px;
+    top: 4px;
 }
 
+#graphCanvas {
+    position: sticky;
+    display: flex;
+    width: 275px;
+    height: 275px;
+    align-items: center;
+    justify-content: center;
+    background-color: #6c757d;
+    border-radius: 3px;
+    z-index: 1001;
+}
 .directories {
     flex: 1;
     background-color: #495057;
-    padding: 10px;
 }
 
-.list-view {
+.list-view ul {
     list-style-type: none;
     padding: 0;
     margin: 0;
@@ -61,11 +97,20 @@
 }
 
 .list-view li a {
-    color: #fff;
+    color: #490081;
     text-decoration: none;
     transition: color 0.3s;
 }
 
 .list-view li a:hover {
-    color: #17a2b8;
+    color: #8e74aa;
+}
+
+.list-view {
+    grid-column: 1;
+    grid-row: 2;
+    border: 1px solid black;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }

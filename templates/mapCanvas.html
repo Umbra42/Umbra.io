@@ -1,30 +1,31 @@
 <!-- Offcanvas Component -->
-<div class="offcanvas hidden" id="fileCanvas">
-    <div class="offcanvas-header">
-        <h3>Site map</h3>
-        <button class="close" id="closeCanvasBtn">&times;</button>
-    </div>
+<div class="offcanvas hidden" id="mapCanvas">
     <div class="offcanvas-body">
-        <div class="graph-view">
-            <p>Graph View</p>
-            <canvas id="graphCanvas"></canvas>
+        <div class="graph-container">
+            <div class="graph-view">
+                <span class="close" id="closeCanvasBtn">&times;</span>
+                <canvas id="graphCanvas">Graph View</canvas>  
+            </div> 
         </div>
 
+        <h4>Files</h4>
         <div class="list-view">
-            <ul class="site-map">
-                <li><a href="./contact.html">contact.html</a></li>
-                <li><a href="./index.html">index.html</a></li>
-                <li><a href="./login.html">login.html</a></li>    
+            <ul id="fileList">
+                <!-- <li>File 1</li>
+                <li>File 2</li>
+                <li>File 3</li> -->
             </ul>
-            <ul class="directories">
-                <th>Directories</th>
-                <tr>
-                    <td><a href="./contact.html">contact.html</a></td>
-                    <td><a href="./index.html">index.html</a></td>
-                    <td><a href="./login.html">login.html</a></td>
-                </tr>
+        </div>   
+    </div>
+    <div class="offcanvas-footer">
+        <h4>SiteMap</h4>
+        <div class="list-view">
+            <ul>
+                <li><a href = "about-me.html"> About me </a></li>
+                <li><a href = "contact.html"> Contact </a></li>
+                <li><a href = "register.html"> Register </a></li>
+                <li><a href = "login.html"> Login </a></li>
             </ul>
         </div>
     </div>
-    <!-- Content for the offcanvas goes here -->
 </div>

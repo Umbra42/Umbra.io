@@ -34,8 +34,7 @@ def create_app():
     app.config["UPLOAD_FOLDER"] = make_folder(os.path.join(os.getcwd(), 'files'))
     app.config["SYSTEM"] = platform.system()
     app.config["APPS_PATH"] = make_folder(os.path.join(os.getcwd(), 'apps'))
-    if os.getenv("WERKZEUG_RUN_MAIN") == "true": 
-        app.config["BLENDER_PATH"] = init_blender(app)
+    app.config["BLENDER_PATH"] = init_blender(app)
     Session(app)
     register_blueprints(app)
     socketio.init_app(app)
@@ -45,9 +44,10 @@ def create_app():
 
 if __name__ == '__main__':
     app = create_app()
-    app.run(
+    socketio.run(
+        app, 
         host="0.0.0.0", 
         port=5000, 
-        debug=True,
+        debug=True, 
         use_reloader=True
     )

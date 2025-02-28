@@ -1,3 +1,42 @@
+.navbar {
+    position: fixed !important;
+    top: 0;
+    left: 0;
+    width: 100%;
+    background-color: #343a40;
+    color: #490081;
+    padding: 10px 20px;
+    z-index: 9999 !important;
+    box-shadow: 0px 2px 10px rgba(0,0,0,0.2); 
+}
+
+.navbar-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+   
+}
+
+.navbar-left {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.navbar-center {
+    display: flex;
+    flex: 1;
+    justify-content: center;
+    align-items: center;
+}
+
+.navbar-right {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
 /* response */
 @media (max-width: 768px) {
     .navbar-links {
@@ -20,39 +59,8 @@
         display: block;
     }
 }
-.navbar-link i, .openCanvasBtn i{
-    margin-right: 8px;
-    font-size: 1.4rem;
-}
-.navbar {
-    background-color: #343a40;
-    color: #ff6f00;
-    padding: 10px 20px;
-    position: sticky;
-    top: 0;
-    z-index: 1000;
-}
 
-.navbar-container {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-.navbar-left {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
-.nabar-center {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
-.navbar-right {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
+
 
 .navbar-brand {
     text-decoration: none;
@@ -69,9 +77,10 @@
 
 .navbar-links {
     display: flex;
-    justify-content: center; /* Adjust to center or space the links */
+    justify-content: flex-end;
     align-items: center;
     gap: 10px;
+    width: auto;
 }
 
 .navbar-link {
@@ -81,6 +90,10 @@
     transition: color 0.3s ease;
 }
 
+.navbar-link i, .openCanvasBtn i{
+    margin-right: 8px;
+    font-size: 1.4rem;
+}
 .navbar-link:hover {
     color: #ff6f00;
     border-radius: 5px;

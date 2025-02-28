@@ -1,132 +1,69 @@
-/* custom modal css */
+#file-input {
+    display: none;
+}
+
 .modal {
-    position: fixed;
-    align-items: center;
-    justify-content: center;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    z-index: 2000;
-    background: #424242;
-    padding: 20px;
-    border-radius: 8px;
-    width: 400px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.5);
-    display: none; 
+  display:flex;
+  position: fixed;
+  align-items: center;
+  justify-content: center;
+  top: 50%;
+  left: 50%;
+  width: 100vw;
+  height: 100vh;
+  z-index: 9999;
+  color: #490081;
+  background: rgba(0, 0, 0, 0.5);
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.8);
+  display: none; 
+  transform: translate(-50%, -50%);
+}
+
+.modal.active {
+  display: block;
 }
 
 .modal-content {
-    background-color: white;
-    padding: 20px;
-    border-radius: 8px;
-    text-align: center;
-}
-  
-.close {
-    position: absolute;
-    top: 10px;
-    right: 10px;
-    cursor: pointer;
-}
-  
-  .hidden {
-    display: none;
-  }
-  
-  /* Progress bar */
-  progress {
-    width: 100%;
-    height: 20px;
-    margin: 10px 0;
-  }
-  #progressOverlay {
-    display: none; 
-    position: fixed;
-    z-index: 1; 
-    left: 0;
-    top: 0;
-    width: 100%;
-    height: 100%; 
-    overflow: auto; 
-    background-color: rgba(0,0,0,0.4); 
-  }
-  #progressContent {
-    background-color: #fefefe;
-    margin: 15% auto; 
-    padding: 20px;
-    border: 1px solid #888;
-    width: 80%; 
-  }
-  .dial {
-    width: 30px;
-    height: 30px;
-    border: 3px solid #999;
-    border-radius: 50%;
-    border-top-color: transparent;
-    animation: spin 2s linear infinite;
-}
-@keyframes rotate {
-    0% {
-        transform: rotate(0deg);
-    }
-    100% {
-        transform: rotate(360deg);
-    }
+  position: relative;
+  background-color: #424242;
+  transform: translate(-50%, 70px);
+  padding: 20px;
+  padding-bottom: 40px;
+  left: 50%;
+  top: 70px;
+  width: 80%;
+  max-width: 400px;
+  border-radius: 8px;
+  text-align: center;
+  z-index: 9997;
 }
 
-  
-  /* Overlay to darken the background */
-  .modal-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0, 0, 0, 0.5);
-    z-index: 999;
-    display: none;
-  }
-  
-  .modal-overlay.active,
-  .modal.active {
-    display: block;
-  }
-
-  .modal-buttons {
-    display: flex;
-    justify-content: center;
-    gap: 10px;
-  }
-/* bootstrap modal css
-.modal {
-    background-color: #424242;
-    display: noneS;
-    align-items: center;
-    justify-content: center;
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
+.hidden {
+  display: none; 
 }
 
-.modal-content {
-    background-color: white;
-    padding: 20px;
-    border-radius: 8px;
-    text-align: center;
+/* progress parameters */
+.total-progress {
+  display: none;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  width: 100%; 
+  margin-top: 8px;
+  margin-bottom: 8px;
 }
 
 .dial {
-    width: 30px;
-    height: 30px;
-    border: 3px solid #999;
-    border-radius: 50%;
-    border-top-color: transparent;
-    animation: spin 2s linear infinite;
+  display: block;
+  width: 30px;
+  height: 30px;
+  border: 3px solid #999;
+  border-radius: 50%;
+  border-top-color: transparent;
+  animation: rotate 2s linear infinite;
+  margin: 8px auto;
 }
-
 @keyframes rotate {
     0% {
         transform: rotate(0deg);
@@ -136,30 +73,107 @@
     }
 }
 
-#progressOverlay {
-    display: none; 
-    position: fixed;
-    z-index: 1; 
-    left: 0;
-    top: 0;
-    width: 100%;
-    height: 100%; 
-    overflow: auto; 
-    background-color: rgba(0,0,0,0.4); 
-  }
-
-  #progressContent {
-    background-color: #fefefe;
-    margin: 15% auto; 
-    padding: 20px;
-    border: 1px solid #888;
-    width: 80%; 
-  }
-
-  .close {
-    position: absolute;
-    top: 10px;
-    right: 10px;
-    cursor: pointer;
+.file-progress-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  margin-top: 20px;
+  margin-bottom: 20px;
+  width: 100%;
 }
-*/
+
+#uploadProgress {
+  width: 100%;
+  height: 10px;
+  border-radius: 5px;
+  overflow: hidden;
+  background: #424242 !important;
+}
+
+#uploadProgress::-webkit-progress-bar {
+  border-radius: 4px;
+}
+
+#uploadProgress::-webkit-progress-value {
+  background: linear-gradient(to right, #490081, #ff6f00) !important;
+  border-radius: 4px;
+  transition: width 0.3s ease-in-out;
+}
+
+#uploadProgress::-moz-progress-bar {
+  background: linear-gradient(to right, #490081, #ff6f00) !important;
+  border-radius: 4px;
+  transition: width 0.3s ease-in-out;
+}
+
+#progressText {
+  color: #490081;
+  font-size: 14px;
+  margin-top: 4px;
+}
+
+/* progress tracking console */
+.console-window {
+  display: flex;
+  flex-direction: column;
+  background-color: #000;
+  color: #ff6f00;
+  font-family: monospace;
+  font-size: 16px;
+  padding: 4px;
+  border: 1px solid #444;
+  height: 120px; 
+  overflow-y: auto;
+  white-space: pre-wrap;
+  text-align: left;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.console-window::-webkit-scrollbar {
+  display: none;
+}
+
+#consoleOutput {
+  margin: 0;
+  padding: 0;
+  line-height: 1.2;
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+}
+
+/* file tracking */
+#fileName {
+  margin-top: 8px;
+  margin-bottom: 8px;
+  display: block;
+  color: #ff6f00;
+}
+
+#fileList {
+  display: block !important;
+  position: relative;
+  margin-top: 8px;
+  padding: 3px;
+  border: 1px solid #444;
+  border-radius: 4px;
+  background-color: #333;
+  max-height: 120px;
+  overflow-y: auto;
+  list-style-type: none;
+}
+
+#fileList li {
+  display:block !important;
+  padding: 4px;
+  border-bottom: 1px solid #ddd;
+  color: #fff;
+  font-size: 14px;
+}
+
+.file-hidden {
+  display: none !important; 
+}

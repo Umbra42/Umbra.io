@@ -77,7 +77,7 @@ def run_conversion(upload_progress, input, output, path):
     print(f"run_converion called with: \n upload_progress: {upload_progress}\n input: {input}\n output: {output}\n path: {path}")
     try:
         print(f" > run_conversion called with:\n")
-        upload_progress['overall'] += 1
+        upload_progress['step_n'] += 1
         upload_progress['status'] = 'running conversion script'
         socketio.emit('progress_update', upload_progress)
 

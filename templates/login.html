@@ -1,15 +1,22 @@
-<div class="container mt-5">
-    <h2>Login</h2>
-    <form action="/auth/login" method="post">
-        <div class="mb-3">
-            <label>Username:</label>
-            <input autocomplete="off" autofocus class="form-control mx-auto w-auto" id="username" name="username" placeholder="Username" type="text">
+<div class="grid-container">
+    <div class="login-container">    
+        <form action="/auth/login" method="post">
+            <div>
+                <input autocomplete="off" autofocus class="username-input" id="username" name="username" placeholder="Username" type="text">
+            </div>
+            <div>
+                <input class="password-input" id="password" name="password" placeholder="Password" type="password">
+            </div>
+            <button type="submit" class="navBtn" value="login">Login</button>
+        </form>
+        <div class="git-tracker">
+            <h2>Git Tracker</h2>
+            <p>
+                Git Tracker is a simple tool to track your git repositories. It allows you to see the status of your repositories and the changes you have made.
+                It is a simple tool that allows you to see the status of your repositories and the changes you have made.
+                It is a simple tool that allows you to see the status of your repositories and the changes you have made.
+            </p>
         </div>
-        <div class="mb-3">
-            <label>Password:</label>
-            <input class="form-control mx-auto w-auto" id="password" name="password" placeholder="Password" type="password">
-        </div>
-        <button type="submit" class="btn btn-primary" value="login">Login</button>
-    </form>
+    </div>
 </div>
 

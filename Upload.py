@@ -6,16 +6,15 @@ from extensions import db
 from flask import current_app
 
 def make_folder(folder):
-    if os.getenv("WERKZEUG_RUN_MAIN") == "true":
-        if not os.path.exists(folder):
-            print(f"folder did not exist. making upload folder: {folder}")
-            os.makedirs(folder)
-            os.chmod(folder, stat.S_IRWXU | stat.S_IRWXG | stat.S_IRWXO)
-        print(f"folder found at: {folder}")
-        return folder
+    if not os.path.exists(folder):
+        print(f"folder did not exist. making upload folder: {folder}")
+        os.makedirs(folder)
+        os.chmod(folder, stat.S_IRWXU | stat.S_IRWXG | stat.S_IRWXO)
+    print(f"folder found at: {folder}")
+    return folder
 
 def get_paths(upload_files, upload_folder):
-    print(" > get_paths called")
+    print(f" > get_paths called with: \n{upload_files}, \n{upload_folder}\n")
     file_paths = []
     for i, file in enumerate(upload_files):
         filename = secure_filename(file.filename)
@@ -31,7 +30,7 @@ def is_unique(path):
         print(" > is_unique called")
         print("check for file duplicates")
         file_name = os.path.basename(path)
-        database = db.execute("SELECT * FROM files WHERE name = ?", (file_name))
+        database = db.execute("SELECT * FROM files WHERE name = ?", (file_name,))
         print(database)
         print(path)
         print(os.path.exists(path))
@@ -53,8 +52,8 @@ def commit(socketio, upload_progress, path, file_name, file_type):
             
             upload_progress['status'] = f'commiting {file_name}, {path}, {file_type}, {file_size} to database'
             socketio.emit('progress_update', upload_progress)
-            
-            db.execute("INSERT INTO files (name, path, type, size) VALUES (?, ?, ?, ?)", 
+            with db:
+                db.execute("INSERT INTO files (name, path, type, size) VALUES (?, ?, ?, ?)", 
                     file_name, path, file_type, file_size)
         
         except Exception as e:

@@ -37,9 +37,13 @@
     border-radius: 18px;
     background-color: #8e74aa;
     color: #490081;
-    border-radius: 5px 5px 0 0;
 }
 
+.modal-buttons {
+    display: block;
+    gap: 10px;
+  }
+  
 .modalBtn {
     border-radius: 18px;
     background-color: #8e74aa;
@@ -50,7 +54,7 @@
     text-align: center;
     text-decoration: none;
     display: inline-block;
-    font-size: 16px;
+    font-size: 12px;
     margin: 4px 2px;
     transition: color 0.4s ease;
 }
@@ -70,4 +74,17 @@
     flex-direction: row;
     width: 80%;
     margin: 0 auto; /* Centers the tab buttons */
+}
+
+.close {
+    position: absolute;
+    top: 1px;
+    right: 5px;
+    cursor: pointer;
+    font-size: 24px;
+    z-index: 9999;
+}
+
+.close:hover {
+    color: #ff6f00;
 }
