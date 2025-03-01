@@ -112,7 +112,13 @@ def run_conversion(upload_progress, input, output, path):
         return False
     return True
 
+def start_blender_listener(app):
+    script = os.path.join(os.getcwd(), 'scripts', 'blender_listener.py')
+    blender = app.config["BLENDER_PATH"]
+    upload_folder = app.config["PROCESS_FOLDER"]
+    display_folder = app.config["DISPLAY_FOLDER"]
 
+    subprocess.Popen([blender, "--background", "--python", script, "--", upload_folder, display_folder])
 
 
 

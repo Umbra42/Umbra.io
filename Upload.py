@@ -40,6 +40,10 @@ def is_unique(path):
         print("is unique")
         return True
 
+def is_allowed(file):
+    return file.lower().rsplit(".", 1)[-1] in current_app.config["ALLOWED_EXTENSIONS"]
+
+    
 def commit(socketio, upload_progress, path, file_name, file_type):
     with current_app.app_context():
         print(" > commit called")      

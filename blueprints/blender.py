@@ -43,9 +43,9 @@ def convert(upload_progress, upload_display_folder, file_name, app):
     upload_progress['status'] = 'constructing conversion object...'
     socketio.emit('progress_update', upload_progress)
     blender_path = app.config['BLENDER_PATH']
-    upload_folder = app.config['UPLOAD_FOLDER']
+    process_folder = app.config['PROCESS_FOLDER']
     file_GLB = os.path.splitext(file_name)[0] + ".glb"
-    uploaded_file = os.path.join(upload_folder, file_name)
+    uploaded_file = os.path.join(process_folder, file_name)
     print("uploaded_file: ", uploaded_file)
     object_path = os.path.join(upload_display_folder, file_GLB)
 
@@ -60,3 +60,4 @@ def convert(upload_progress, upload_display_folder, file_name, app):
             print("file converted")
         
     return file_GLB
+

@@ -14,11 +14,11 @@ def init_blender(app):
             print(f"Failed to initialize Blender: {e}")
             raise
 
-def start_upload(app, upload_progress, task_id, N_upload_files, upload_folder, file_paths):
+def start_upload(app, upload_progress, task_id, N_upload_files, process_folder, display_folder, file_paths):
     with app.app_context():
         upload_progress['state'] = "Running"
         socketio.emit('progress_update', upload_progress)
-        print(f" > start_upload called with:\n task_id:{task_id}, \n N_upload_files:{N_upload_files}, \n upload_folder:{upload_folder}, \n file_paths:{file_paths}")
+        print(f" > start_upload called with:\n task_id:{task_id}, \n N_upload_files:{N_upload_files}, \n process_folder:{process_folder}, \n file_paths:{file_paths}")
 
         upload_progress['step_n'] += 1
         upload_progress['status'] = 'Indexing files...'
@@ -43,7 +43,8 @@ def start_upload(app, upload_progress, task_id, N_upload_files, upload_folder, f
                     upload_progress['step_n'] += 1
                     upload_progress['status'] = 'constructing conversion environment...'
                     print(f"constructing conversion environment")
-                    upload_display_folder = os.path.join(upload_folder, "display_objects")
+                    
+                    upload_display_folder = os.path.join(display_folder, "3D_objects")
                     print(f" > calling make_folder")
                     make_folder(upload_display_folder)
                     print(f"going to upload to: {upload_display_folder}")
@@ -62,7 +63,7 @@ def start_upload(app, upload_progress, task_id, N_upload_files, upload_folder, f
                     upload_progress['status'] = 'setting upload path'
                     socketio.emit('progress_update', upload_progress)  
 
-                    upload_path = os.path.join(upload_folder, "text", file_name)
+                    upload_path = os.path.join(process_folder, "text", file_name)
                     print(f"going to upload to: {upload_path}")
 
                 case _:
@@ -72,7 +73,7 @@ def start_upload(app, upload_progress, task_id, N_upload_files, upload_folder, f
                     upload_progress['status'] = 'setting upload path'
                     socketio.emit('progress_update', upload_progress)
 
-                    upload_path = os.path.join(upload_folder, "images", file_name)
+                    upload_path = os.path.join(process_folder, "images", file_name)
                     print(f"going to upload to: {upload_path}")
 
             print(" > calling is_unique")
