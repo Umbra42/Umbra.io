@@ -11,15 +11,6 @@ export function init() {
     console.log('Connected to server');
   });
   
-  socket.on('progress_update', (data) => {
-    console.log('progress_update:', data);
-    if (data.state === "completed") {
-      console.log('Upload completed');
-    } else if (data.state === 'error') {
-      console.log(`Error: ${data.status}`);
-    }
-  });
-  
   socket.on('disconnect', () => {
     console.log('Disconnected from server');
   });

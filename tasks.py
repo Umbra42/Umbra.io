@@ -19,7 +19,7 @@ def start_upload(app, task_id, upload_files, N_upload_files, process_folder, des
         print(f" > start_upload called with:\n task_id:{task_id}, \n N_upload_files:{N_upload_files}, \n process_folder:{process_folder}, \n file_paths:{file_paths}")
         update_progress(task_id, state= "Running", status= 'Indexing files...')
         for i, file in enumerate(upload_files):
-            file_name = file.filename 
+            file_name = file.filename.replace(" ", "_") 
             file_type = os.path.splitext(file_name)[1]
             current = f"{file_name} {file_type}"
             current_n = i

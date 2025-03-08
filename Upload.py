@@ -28,7 +28,7 @@ def get_paths(upload_files, upload_folder):
 def is_unique(file_name):
     with current_app.app_context():
         print(" > is_unique called")
-        print("check for file duplicates")
+        print(f"check for file duplicates: {file_name}")
         file_index = current_app.config.get("FILE_INDEX", {})
         file_path = os.path.join('files', file_name)
         result = db.execute("SELECT * FROM files WHERE name = ?", (file_name,))
@@ -49,16 +49,24 @@ def commit(task_id, file, destination_path, file_name, file_type):
     with current_app.app_context():
         print(" > commit called")      
         update_progress(task_id, status= 'checking file size')
-        file_size = str(round((os.path.getsize(destination_path) / 1000))) + " KB"
         try:
-            print(f"commit {file_size} to database")
+            file.seek(0)
+            file.save(destination_path)
+
+            if not os.path.exists(destination_path):
+                raise Exception(f"File was not saved: {destination_path}")
+
+            file_size = str(round((os.path.getsize(destination_path) / 1000))) + " KB"
+            print(f"committing: '{file_size}' in database")
             update_progress(task_id, status= f'commiting {destination_path}, {file_type}, {file_size} to database')
-            with db:
-                db.execute("INSERT INTO files (name, path, type, size) VALUES (?, ?, ?, ?)", 
-                    file_name, destination_path, file_type, file_size)
+
+            db.execute(
+                "INSERT INTO files (name, path, type, size) VALUES (?, ?, ?, ?)", 
+                (file_name, destination_path, file_type, file_size)
+            )
 
             current_app.config["FILE_INDEX"][file_name] = destination_path
-            file.save(os.path.join(destination_path, secure_filename(file_name)))
+            print(f"{file} commited successfuly")
         except Exception as e:
             print(f"failed to commit: {e}")
             update_progress(task_id, status=f'failed to commit with error: {e}', state="ERROR")
@@ -67,12 +75,11 @@ def commit(task_id, file, destination_path, file_name, file_type):
 def update_progress(task_id, **updates):
     if task_id not in UPLOAD_PROGRESS_TRACKER:
         UPLOAD_PROGRESS_TRACKER[task_id] = {
-            "task_id" : "",
             "state" : 'Initializing',
             "total" : '',
             "current" : "",
             "current_n" : 0,
-            "step_n": 1,
+            "step_n": 0,
             "status" : 'Init upload...'
         }
     UPLOAD_PROGRESS_TRACKER[task_id]["step_n"] += 1

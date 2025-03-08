@@ -73,13 +73,13 @@ export function init(fileInput, fileName, fileInputBtn, fileList, uploadModalBtn
         .then(data => {
             if (data.state === 'Completed') {
                 console.log(`Upload successful: ${data.task_id}`);
-            } else {
+            } else if (data.state === 'ERROR'){
                 console.log(`Upload failed: ${data.status} || "Unknown error"`);
             }
         })
 
         .catch(error => {
-            console.error('Upload failed:', error);
+            console.error(`Upload failed: ${data.error}`);
             console.log('Upload failed: Unknown error');
         })
 

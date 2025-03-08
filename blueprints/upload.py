@@ -33,7 +33,7 @@ def upload():
             "code": current_app.config["CODE_FOLDER"], 
             "projects": current_app.config["PROJECTS_FOLDER"]
         }
-        update_progress(task_id, status= f'upload process location at {process_folder}...\n             upload display location at{destinations}...')        
+        update_progress(task_id, status= f'upload process location at {process_folder} ...\n             upload display location at{destinations}...')        
 
         update_progress(task_id, status='constructing filepaths...', state='Processing')
         print(" > making filepaths for temp upload.\n   calling get_paths")
@@ -45,12 +45,12 @@ def upload():
         print(f" > calling start_upload with:\n task_id:{task_id}, \n upload_files:{upload_files}, \n N_upload_files:{N_upload_files}, \n process_folder:{process_folder}, \n file_paths:{file_paths}")        
         socketio.start_background_task(tasks.start_upload, current_app._get_current_object(), task_id, upload_files, N_upload_files, process_folder, destinations, file_paths)
             
-        return jsonify(UPLOAD_PROGRESS_TRACKER["task_id"]), 200
+        return jsonify(UPLOAD_PROGRESS_TRACKER[task_id]), 200
     
     except Exception as e:
         print(f"❌ Upload Error: {str(e)}")
         update_progress(task_id, status=f"Failed to upload files: {str(e)}", state="Error")
-        return jsonify(UPLOAD_PROGRESS_TRACKER["task_id"]), 500
+        return jsonify(UPLOAD_PROGRESS_TRACKER[task_id]), 500
 
 @upload_bp.route("/progress/<task_id>", methods=["GET"])
 def upload_progress(task_id):

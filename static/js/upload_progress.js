@@ -5,7 +5,7 @@ export function init(socket, state, status, consoleOutput, totalProgressDail, up
   }
 
   socket.on('progress_update', (data) => {
-    console.log("Overall Progress Data:", data);
+    console.log('progress_update:', data);
     
     if (!data || typeof data !== 'object') {
       console.error('Invalid overall progress data');
@@ -59,11 +59,13 @@ export function init(socket, state, status, consoleOutput, totalProgressDail, up
     }
 
     if (data.state === "Completed") {
+      console.log('Upload completed');
       consoleOutput.scrollTop = consoleOutput.scrollHeight;
     }
 
     if (data.state === "ERROR") {
-      state.style.color = 'red';
+      state.style.color = 'red !important';
+      console.log(`Error: ${data.status}`);
       consoleOutput.innerHTML += `\n[${new Date().toLocaleTimeString()}] ❌ Error: ${data.status}`;
     }
   });
