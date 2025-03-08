@@ -4,7 +4,8 @@ import zipfile
 import tarfile
 import subprocess
 from flask import current_app
-from extensions import socketio
+from extensions import UPLOAD_PROGRESS_TRACKER
+from Upload import update_progress
     
 def blender_exists(path):
     print(f"checking for blender at {path}")
@@ -73,21 +74,17 @@ def extract_to(compressed_path):
                     raise
     
 
-def run_conversion(upload_progress, input, output, path):
-    print(f"run_converion called with: \n upload_progress: {upload_progress}\n input: {input}\n output: {output}\n path: {path}")
+def run_conversion(task_id, input, output, path):
     try:
-        print(f" > run_conversion called with:\n")
-        upload_progress['step_n'] += 1
-        upload_progress['status'] = 'running conversion script'
-        socketio.emit('progress_update', upload_progress)
-
-        print(f" inputpath: {input}\n outputpath: {output}\n blenderpath: {path}\n")
+        print(f" > run_converion called with: \n upload_progress: {UPLOAD_PROGRESS_TRACKER[task_id]} \n inputpath: {input}\n outputpath: {output}\n blenderpath: {path}\n")
+        update_progress(task_id, status='running conversion script', state='converting')
         script_path = os.path.join(os.getcwd(), 'scripts', 'convert.py')
         print(f" script: {script_path}\n")
         command = [ 
             path,
             '--background', 
-            '--python', script_path,
+            '--python', 
+            script_path,
             '--',
             input,
             output,
@@ -116,7 +113,7 @@ def start_blender_listener(app):
     script = os.path.join(os.getcwd(), 'scripts', 'blender_listener.py')
     blender = app.config["BLENDER_PATH"]
     upload_folder = app.config["PROCESS_FOLDER"]
-    display_folder = app.config["DISPLAY_FOLDER"]
+    display_folder = app.config["MODELS_FOLDER"]
 
     subprocess.Popen([blender, "--background", "--python", script, "--", upload_folder, display_folder])
 

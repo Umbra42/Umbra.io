@@ -58,11 +58,11 @@ export function init(socket, state, status, consoleOutput, totalProgressDail, up
       totalProgressDail.setAttribute('aria-valuenow', totalPercentage);
     }
 
-    if (data.state === "completed") {
+    if (data.state === "Completed") {
       consoleOutput.scrollTop = consoleOutput.scrollHeight;
     }
 
-    if (data.state === "error") {
+    if (data.state === "ERROR") {
       state.style.color = 'red';
       consoleOutput.innerHTML += `\n[${new Date().toLocaleTimeString()}] ❌ Error: ${data.status}`;
     }

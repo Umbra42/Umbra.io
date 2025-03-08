@@ -9,28 +9,27 @@
     <!-- Tab content -->
     <div class="tab-content">
         <div id="tab1" class="tab-panel active">
-            <p>
-                {% block Blender %}
-                ...Blender content...
-                {% if block == "Blender"%} 
-                <script src="/static/js/blender.js"></script>
-                {% endif %}
-                {% endblock %}
-            </p>
+            <h2>3D Model Viewer</h2>
+            <div id="model-list"></div>
+            <div id="viewer-container">
+                <canvas id="viewer-canvas"></canvas>
+            </div>
+            <script src="/static/js/blender.js"></script>
         </div>
+
         <div id="tab2" class="tab-panel">
-            <p>
-                {% block Code %}
-                ...Code content...
-                {% endblock %}
-            </p>
+            <h2>Code Snippets</h2>
+            <div id="code-list"></div>
+            <pre id="code-display"><code></code></pre>
+            <button id="run-code">Run Code</button>
+            <script src="/static/js/code.js"></script>
         </div>
+        
         <div id="tab3" class="tab-panel">
-            <p>
-                {% block Fabrication %}
-                ...Fabrication content...
-                {% endblock %}
-            </p>
+            <h2>Project Documentation</h2>
+            <div id="project-list"></div>
+            <div id="project-viewer"></div>
+            <script src="/static/js/projects.js"></script>
         </div>
     </div>
 </div>

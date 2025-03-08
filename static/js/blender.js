@@ -1,34 +1,22 @@
-// Dynamically load Three.js
-const script = document.createElement('script');
-script.src = 'https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js';
-script.onload = () => {
-    // Initialize your script after Three.js is loaded
-    init();
-};
-document.head.appendChild(script);
+const socket = io();
 
-// Initialize Three.js
-function init() {
-    const scene = new THREE.Scene();
-    const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-    const renderer = new THREE.WebGLRenderer();
+socket.emit("request_models");
 
-    renderer.setSize(window.innerWidth, window.innerHeight);
-    document.body.appendChild(renderer.domElement);
+socket.on("models_list", function(models) {
+    const modelList = document.getElementById("model-list");
+    modelList.innerHTML = "";
+    models.forEach(model => {
+        let button = document.createElement("button");
+        button.innerText = model;
+        button.onclick = () => loadModel(model);
+        modelList.appendChild(button);
+    });
+});
 
-    const geometry = new THREE.BoxGeometry();
-    const material = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
-    const cube = new THREE.Mesh(geometry, material);
-    scene.add(cube);
-
-    camera.position.z = 5;
-
-    function animate() {
-        requestAnimationFrame(animate);
-        cube.rotation.x += 0.01;
-        cube.rotation.y += 0.01;
-        renderer.render(scene, camera);
-    }
-
-    animate();
+function loadModel(modelName) {
+    const modelUrl = `/models/${modelName}`;
+    const loader = new THREE.GLTFLoader();
+    loader.load(modelUrl, gltf => {
+        scene.add(gltf.scene);
+    }, undefined, error => console.error("Error loading model:", error));
 }

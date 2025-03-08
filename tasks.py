@@ -1,6 +1,6 @@
 import os
-from Upload import commit, is_unique, make_folder
-from extensions import socketio, upload_tasks
+from Upload import commit, update_progress
+from extensions import socketio, UPLOAD_PROGRESS_TRACKER
 from flask import current_app
 from blueprints.blender import convert, check_blender
 
@@ -14,98 +14,48 @@ def init_blender(app):
             print(f"Failed to initialize Blender: {e}")
             raise
 
-def start_upload(app, upload_progress, task_id, N_upload_files, process_folder, display_folder, file_paths):
+def start_upload(app, task_id, upload_files, N_upload_files, process_folder, destinations, file_paths):
     with app.app_context():
-        upload_progress['state'] = "Running"
-        socketio.emit('progress_update', upload_progress)
         print(f" > start_upload called with:\n task_id:{task_id}, \n N_upload_files:{N_upload_files}, \n process_folder:{process_folder}, \n file_paths:{file_paths}")
-
-        upload_progress['step_n'] += 1
-        upload_progress['status'] = 'Indexing files...'
-        socketio.emit('progress_update', upload_progress)
-        for i, file_path in enumerate(file_paths):
-            file_name = os.path.basename(file_path)
+        update_progress(task_id, state= "Running", status= 'Indexing files...')
+        for i, file in enumerate(upload_files):
+            file_name = file.filename 
             file_type = os.path.splitext(file_name)[1]
             current = f"{file_name} {file_type}"
             current_n = i
             upload_path = None
-            upload_progress['current'] = current
-            upload_progress['current_n'] = current_n
-            upload_progress['status'] = f'indexing file{current}...'  
-            socketio.emit('progress_update', upload_progress)
-            
-            upload_progress['step_n'] += 1
-            upload_progress['status'] = 'matching file type...'
-            socketio.emit('progress_update', upload_progress)
+            update_progress(task_id, status=f'indexing file:{current}...', current= current, current_n=current_n)
+            update_progress(task_id, status='matching file type...')
             match file_type:
                 case ".blend":
-                    print(f"found {file_type}")
-                    upload_progress['step_n'] += 1
-                    upload_progress['status'] = 'constructing conversion environment...'
-                    print(f"constructing conversion environment")
-                    
-                    upload_display_folder = os.path.join(display_folder, "3D_objects")
-                    print(f" > calling make_folder")
-                    make_folder(upload_display_folder)
-                    print(f"going to upload to: {upload_display_folder}")
-                    
-                    upload_progress['step_n'] += 1
-                    upload_progress['status'] = 'Starting conversion to glb...'
-                    socketio.emit('progress_update', upload_progress)
+                    print(f"found {file_type}")             
+                    update_progress(task_id, status='Starting conversion to glb...', state='Converting')
                     print(" > calling convert")
-                    file_name = convert(upload_progress, upload_display_folder, file_name, current_app)
-                    upload_path = os.path.join(upload_display_folder, file_name) 
+                    destination = destinations["models"]
+                    file_name = convert(task_id, destination, file_name, current_app)
+                    update_progress(task_id, status='setting upload path', state='Processing')
+                    upload_path = os.path.join(destination, file_name) 
+                    print(f"going to upload to: {upload_path}")
 
                 case ".md" | ".txt" | ".docx" | ".doc" | ".xlsx" | ".xlsm":
                     print(f"found {file_type}")
-
-                    upload_progress['overall'] += 1
-                    upload_progress['status'] = 'setting upload path'
-                    socketio.emit('progress_update', upload_progress)  
-
-                    upload_path = os.path.join(process_folder, "text", file_name)
+                    update_progress(task_id, status='setting upload path', state='Processing')
+                    destination = destinations["projects"]
+                    upload_path = os.path.join(destination, "text", file_name)
                     print(f"going to upload to: {upload_path}")
 
                 case _:
                     print(f"found {file_type}")
-
-                    upload_progress['overall'] += 1
-                    upload_progress['status'] = 'setting upload path'
-                    socketio.emit('progress_update', upload_progress)
-
-                    upload_path = os.path.join(process_folder, "images", file_name)
+                    update_progress(task_id, status= 'setting upload path', state='Processing')
+                    destination = destinations["code"]
+                    upload_path = os.path.join(destination, "images", file_name)
                     print(f"going to upload to: {upload_path}")
 
-            print(" > calling is_unique")
-            upload_progress['step_n'] += 1
-            upload_progress['status'] = 'checking file uniqueness'
-            socketio.emit('progress_update', upload_progress)
-            if is_unique(upload_path):
-                path = os.path.join(upload_path)
-                print("uploaded to: ", path)
-                with open(file_path, 'rb') as source_file:
-                    with open(path, 'wb') as dest_file:
-                        dest_file.write(source_file.read())
-                print(" > calling commit")
-
-                upload_progress['step_n'] += 1
-                upload_progress['status'] = 'commiting file name and location to database'
-                socketio.emit('progress_update', upload_progress)
-                commit(socketio, upload_progress, path, file_name, file_type)
-            else:
-                upload_progress['state'] = 'Complete'
-                upload_progress['status'] = 'file already exists'
-                socketio.emit('progress_update', upload_progress)
-
-            upload_progress['step_n'] += 1
-            upload_progress['status'] = 'Upload successful'
-            socketio.emit('progress_update', upload_progress)
-        
-        upload_progress['step_n'] += 1
-        upload_progress['state'] = "completed"
-        upload_progress['status'] = 'files uploaded successfully'
-        socketio.emit('progress_update', upload_progress)
-        
-        if task_id in upload_tasks:
-            del upload_tasks[task_id]
+            print(" > calling commit")
+            update_progress(task_id, status='commiting file name and location to database', state="Finalizing")
+            commit(task_id, file, upload_path, file_name, file_type)
+      
+        update_progress(task_id, status= 'Upload successful', state= 'Complete')
+        if task_id in UPLOAD_PROGRESS_TRACKER:
+            del UPLOAD_PROGRESS_TRACKER[task_id]
         return
