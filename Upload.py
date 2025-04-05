@@ -44,7 +44,6 @@ def is_unique(file_name):
 def is_allowed(file):
     return file.lower().rsplit(".", 1)[-1] in current_app.config["ALLOWED_EXTENSIONS"]
 
-    
 def commit(task_id, file, destination_path, file_name, file_type):
     with current_app.app_context():
         print(" > commit called")      
@@ -77,21 +76,29 @@ def track_step(task_id, current_file_name, step_n, total_steps, status):
     if tracker and current_file_name in tracker["files"]:
         tracker["files"][current_file_name].append(step)
 
-def update_progress(task_id, **update):
-    if task_id not in UPLOAD_PROGRESS_TRACKER:
-        UPLOAD_PROGRESS_TRACKER[task_id] = {
-            "state" : 'Initializing',
-            "total_file_n" : "",
-            "files" : {},
-            "current_file_name" : "",
-            "current_file_n" : 0,
-            "step_n": 0,
-            "total_steps": calculate_total_steps(update),
-            "status" : 'Init upload...'
-        }
+def blender_progress(**update):
+    update_progress(task_id="blender", **update)
+
+def update_progress(task_id, emit= True, **update):
+    if task_id not in UPLOAD_PROGRESS_TRACKER and task_id != "blender":
+        print(f"[DEBUG] Task ID {task_id} not found in UPLOAD_PROGRESS_TRACKER. - skipping update.")
+        return
     UPLOAD_PROGRESS_TRACKER[task_id]["step_n"] += 1
     UPLOAD_PROGRESS_TRACKER[task_id].update(update)
-    socketio.emit("progress_update", UPLOAD_PROGRESS_TRACKER[task_id])
+    if emit:
+        socketio.emit("progress_update", UPLOAD_PROGRESS_TRACKER[task_id])
+
+def init_progress_tracker(task_id, **update):
+    UPLOAD_PROGRESS_TRACKER[task_id] = {
+        "state" : 'Initializing',
+        "total_file_n" : "",
+        "files" : {},
+        "current_file_name" : "",
+        "current_file_n" : 0,
+        "step_n": 0,
+        "total_steps": calculate_total_steps(update),
+        "status" : 'Init upload...'
+    }
 
 def build_index(root):
     file_index = {}

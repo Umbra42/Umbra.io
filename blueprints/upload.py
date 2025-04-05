@@ -3,7 +3,7 @@ import uuid
 import tasks
 from flask import Blueprint, request, jsonify, session, current_app
 from helpers import login_required
-from Upload import process_paths, is_unique, is_allowed, update_progress
+from Upload import process_paths, is_unique, is_allowed, update_progress, init_progress_tracker
 
 upload_bp = Blueprint('upload', __name__)
 
@@ -13,6 +13,7 @@ def upload():
     print(" > /upload called")
     try:
         task_id = str(uuid.uuid4())
+        init_progress_tracker(task_id)
         session['task_id'] = task_id
         update_progress(task_id, status='Initializing Upload...', state='Pending')  
         print(f"Generated task ID: {task_id}")

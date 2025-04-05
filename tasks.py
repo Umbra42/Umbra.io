@@ -1,17 +1,28 @@
 import os
 import time
-from Upload import commit, update_progress
+from Upload import commit, update_progress, blender_progress, init_progress_tracker
 from extensions import UPLOAD_PROGRESS_TRACKER
 from Blender import blender_exists
 
-def init_blender(app):
-    update_progress(status="Checking Blender installation")
+def init_blender(app, emit=True):  
+    if "blender" not in UPLOAD_PROGRESS_TRACKER:
+        init_progress_tracker(task_id="blender")
+
+    if emit:
+        blender_progress(status="Checking Blender installation")
+
     with app.app_context():
         try:
-            blender_path = blender_exists(app.config['APPS_PATH'])
+            blender_path = blender_exists(app.config['APPS_PATH'], emit=emit)
+            if blender_path is None:
+                raise FileNotFoundError("Blender executable not found.")
+            if emit:
+                blender_progress(status="Blender found", state="Complete")
             print(f"Blender initialized at {blender_path}")
             return blender_path
         except Exception as e:
+            if emit:
+                blender_progress(status="Blender not found", state="Error")
             print(f"Failed to initialize Blender: {e}")
             raise
 

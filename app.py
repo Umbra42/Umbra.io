@@ -42,7 +42,7 @@ def create_app():
     app.config["ALLOWED_EXTENSIONS"] = {"blend", "glb", "img", "svg", "jpg", "md", "txt", "py"}
     app.config["SYSTEM"] = platform.system()
     app.config["APPS_PATH"] = make_folder(os.path.join(os.getcwd(), 'apps'))
-    app.config["BLENDER_PATH"] = None
+    app.config["BLENDER_PATH"] = init_blender(app, emit=False)
 
     Session(app)
     register_blueprints(app)

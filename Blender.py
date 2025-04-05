@@ -1,20 +1,22 @@
 import os
+import subprocess
 import urllib
 import zipfile
 import tarfile
-from flask import current_app
-from Upload import update_progress
+import extensions
+from flask import current_app, json, jsonify, request
+from Upload import blender_progress
 
-def check_install_blender(current_app):
+def check_install_blender(current_app, emit=True):
     with current_app.app_context():
-        blender_path = blender_exists(current_app.config['APPS_PATH'])
+        blender_path = blender_exists(current_app.config['APPS_PATH'], emit=emit)
         if not blender_path:
             blender_path = install_blender(current_app)
             print(blender_path)
         return blender_path
 
-def blender_exists(path):
-    update_progress(status="Checking for Blender installation")
+def blender_exists(path, emit=True):
+    blender_progress(status="Checking for Blender installation", emit=emit)
     print(f"checking for blender at {path}")
     exe_name = "blender.exe" if os.name == "nt" else "blender"
     for folder in os.listdir(path):
@@ -23,12 +25,12 @@ def blender_exists(path):
             for file in os.listdir(folder_path):
                 if file.strip().lower() == exe_name:
                     blender_path = os.path.join(folder_path, file)
-                    update_progress(status="Blender found")
+                    blender_progress(status="Blender found", emit=emit)
                     print(f"found blender at: {blender_path}")
                     return blender_path
-    update_progress(status="Blender not found")
+    blender_progress(status="Blender not found", emit=emit)
     print("blender not found")
-    return None 
+    raise FileNotFoundError("Blender executable not found in given path") 
 
 def install_blender():
     if current_app.config['SYSTEM'] == "Windows":
@@ -110,3 +112,28 @@ def is_running(process):
     return False
 
 
+def run_listener():
+    try:
+        data = request.get_json()
+        task_id = data.get("task_id")
+        process_folder = current_app.config["PROCESS_FOLDER"]
+        glb_folder = current_app.config["MODELS_FOLDER"]
+        progress = json.dumps(extensions.UPLOAD_PROGRESS_TRACKER.get(task_id, {}))
+        blender_progress(status="Passing data to and starting Blender Listener script")
+        blender = current_app.config["BLENDER_PATH"]
+        script = os.path.join(os.getcwd(), 'scripts', 'blender_listener.py')
+        extensions.WATCHER_PROCESS = subprocess.Popen([
+                blender, 
+                "--background", 
+                "--python", 
+                script, 
+                "--",
+                process_folder,
+                glb_folder, 
+                task_id,
+                progress
+            ])
+        return jsonify({"status": "started", "message": "Blender Listener Started"})
+    except Exception as e:
+        blender_progress(status=f"Failed to start Blender Listener {e}")
+        return jsonify({"status": "error", "message": str(e)},500)

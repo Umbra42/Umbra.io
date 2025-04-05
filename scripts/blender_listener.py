@@ -99,6 +99,7 @@ def validate_args():
     return args
 
 if __name__ == "__main__":
+    print("[BLENDER SCRIPT] Listener started with args:", sys.argv)
     args = validate_args()
     PROCESS_FOLDER = args[0]
     GLB_FOLDER = args[1]
