@@ -1,9 +1,12 @@
+import { startCheckBlender, stopBlender } from './blender.js';
+
 export function init(uploadNavBtn, closeModal, uploadModal, fileInput, overallProgressDiv) {
   // open modal
   if (uploadNavBtn) {
     uploadNavBtn.addEventListener('click', () => {
       console.log('Nav Upload button clicked');
       uploadModal.classList.add('active');
+      startCheckBlender();
     });
   } else {
     console.warn('Upload button not found');
@@ -28,6 +31,7 @@ export function init(uploadNavBtn, closeModal, uploadModal, fileInput, overallPr
       closeModal.addEventListener('click', () => {
       console.log('Close button clicked');
       uploadModal.classList.remove('active');
+      stopBlender();
   });
   } else {
       console.warn('Close button not found');

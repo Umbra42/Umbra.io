@@ -1,38 +1,39 @@
 import os
+import time
 from Upload import commit, update_progress
-from extensions import socketio, UPLOAD_PROGRESS_TRACKER
-from flask import current_app
-from blueprints.blender import convert, check_blender
+from extensions import UPLOAD_PROGRESS_TRACKER
+from Blender import blender_exists
 
 def init_blender(app):
+    update_progress(status="Checking Blender installation")
     with app.app_context():
         try:
-            blender_path = check_blender(app)
+            blender_path = blender_exists(app.config['APPS_PATH'])
             print(f"Blender initialized at {blender_path}")
             return blender_path
         except Exception as e:
             print(f"Failed to initialize Blender: {e}")
             raise
 
-def start_upload(app, task_id, upload_files, N_upload_files, process_folder, destinations, file_paths):
+def start_upload(app, task_id, upload_files, destinations):
     with app.app_context():
-        print(f" > start_upload called with:\n task_id:{task_id}, \n N_upload_files:{N_upload_files}, \n process_folder:{process_folder}, \n file_paths:{file_paths}")
-        update_progress(task_id, state= "Running", status= 'Indexing files...')
+        print(f" > start_upload called")
+        update_progress(task_id, state= "Running", status= 'Indexing files...', step_n=0)
         for i, file in enumerate(upload_files):
-            file_name = file.filename.replace(" ", "_") 
+            file_name = file.filename.replace(" ", "_")
             file_type = os.path.splitext(file_name)[1]
             current = f"{file_name} {file_type}"
             current_n = i
             upload_path = None
-            update_progress(task_id, status=f'indexing file:{current}...', current= current, current_n=current_n)
+            update_progress(task_id, status=f'indexing file:{current}...', current_file_name = current, current_file_n = current_n)
             update_progress(task_id, status='matching file type...')
             match file_type:
                 case ".blend":
                     print(f"found {file_type}")             
                     update_progress(task_id, status='Starting conversion to glb...', state='Converting')
-                    print(" > calling convert")
                     destination = destinations["models"]
-                    file_name = convert(task_id, destination, file_name, current_app)
+                    file_name = os.path.join(os.path.splitext(file_name)[0] + ".glb")
+                    print("glb file name: ", file_name)
                     update_progress(task_id, status='setting upload path', state='Processing')
                     upload_path = os.path.join(destination, file_name) 
                     print(f"going to upload to: {upload_path}")
@@ -50,6 +51,15 @@ def start_upload(app, task_id, upload_files, N_upload_files, process_folder, des
                     destination = destinations["code"]
                     upload_path = os.path.join(destination, "images", file_name)
                     print(f"going to upload to: {upload_path}")
+
+            update_progress(task_id, status="awaiting conversion", state="Waiting")
+            timeout = 60
+            start_time = time.time()
+            while not os.path.exists(upload_path):
+                if time.time() - start_time > timeout:
+                    print("blender timedout")
+                    raise TimeoutError
+                time.sleep(2)
 
             print(" > calling commit")
             update_progress(task_id, status='commiting file name and location to database', state="Finalizing")

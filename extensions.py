@@ -5,5 +5,6 @@ db = SQL("sqlite:///project.db")
 from flask_socketio import SocketIO
 socketio = SocketIO(cors_allowed_origins="*", async_mode="eventlet")
 
+WATCHER_PROCESS = None
 UPLOAD_PROGRESS_TRACKER = {}
 

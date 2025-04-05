@@ -12,9 +12,9 @@ export function init(socket, state, status, consoleOutput, totalProgressDail, up
       return;
     }
 
-    // 25 place holder value
-    let percentage = Math.round(data.step_n / 25)* 100;
-
+    // const total_steps = data.total * n_repeated_steps;
+    let percentage = Math.round(data.step_n / 42)* 100;
+    console.log('percentage:', percentage, 'step:', data.step_n);
     if (uploadProgressBar) {
       uploadProgressBar.style.transition = 'width 0.3s ease-in-out';
       uploadProgressBar.value = percentage;

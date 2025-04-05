@@ -1,3 +1,6 @@
+import {init as initSocket} from "./sockets.js";
+const socket = initSocket();
+
 socket.emit("request_projects"); // Request projects on load
 
 socket.on("projects_list", function(files) {

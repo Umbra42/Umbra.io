@@ -1,3 +1,5 @@
+import { startCheckBlender, stopBlender } from './blender.js';
+
 export function init(fileInput, fileName, fileInputBtn, fileList, uploadModalBtn, uploadForm) {
     setTimeout(() => {
         if (!fileInput || !fileName || !fileInputBtn || !fileList || !uploadModal) {
@@ -7,6 +9,7 @@ export function init(fileInput, fileName, fileInputBtn, fileList, uploadModalBtn
         
         fileInputBtn.addEventListener('click', () => {
             fileInput.click();
+            startCheckBlender();
         });
 
         fileInput.addEventListener('change', () => {
@@ -63,7 +66,6 @@ export function init(fileInput, fileName, fileInputBtn, fileList, uploadModalBtn
         uploadModalBtn.disabled = true;
 
         const formData = new FormData(uploadForm);
-        
         fetch('/upload/upload', {
             method: 'POST',
             body: formData
@@ -73,6 +75,7 @@ export function init(fileInput, fileName, fileInputBtn, fileList, uploadModalBtn
         .then(data => {
             if (data.state === 'Completed') {
                 console.log(`Upload successful: ${data.task_id}`);
+                stopBlender();
             } else if (data.state === 'ERROR'){
                 console.log(`Upload failed: ${data.status} || "Unknown error"`);
             }

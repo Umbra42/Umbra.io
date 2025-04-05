@@ -1,9 +1,9 @@
-from flask import Blueprint, request, jsonify, session, current_app
-from extensions import socketio, UPLOAD_PROGRESS_TRACKER
-from helpers import login_required
-from Upload import get_paths, is_unique, is_allowed, update_progress
+import extensions
 import uuid
 import tasks
+from flask import Blueprint, request, jsonify, session, current_app
+from helpers import login_required
+from Upload import process_paths, is_unique, is_allowed, update_progress
 
 upload_bp = Blueprint('upload', __name__)
 
@@ -14,15 +14,15 @@ def upload():
     try:
         task_id = str(uuid.uuid4())
         session['task_id'] = task_id
-        update_progress(task_id, status='Initializing Upload...', state='Processing')  
+        update_progress(task_id, status='Initializing Upload...', state='Pending')  
         print(f"Generated task ID: {task_id}")
         update_progress(task_id, status='getting file list...')
         upload_files = request.files.getlist('files')
         
-        update_progress(task_id, state='validating files and environment')
+        update_progress(task_id, status='validating files and environment')
         upload_files[:] = [file for file in upload_files if is_allowed(file.filename) and is_unique(file.filename)] 
         N_upload_files = len(upload_files)
-        update_progress(task_id, status='determining list length...', total= N_upload_files)
+        update_progress(task_id, status='determining list length...', total_file_n = N_upload_files)
         if N_upload_files <= 0:
             return jsonify({"error": "No files uploaded"}), 400
         
@@ -35,28 +35,40 @@ def upload():
         }
         update_progress(task_id, status= f'upload process location at {process_folder} ...\n             upload display location at{destinations}...')        
 
-        update_progress(task_id, status='constructing filepaths...', state='Processing')
+        update_progress(task_id, status='constructing filepaths...', state='Pending')
         print(" > making filepaths for temp upload.\n   calling get_paths")
-        file_paths = get_paths(upload_files, process_folder) 
+        file_paths = process_paths(upload_files, process_folder) 
         print(f"returned filepaths:\n{file_paths}")
         update_progress(task_id, status= f'constructed paths: {file_paths}...')        
 
-        update_progress(task_id, status='starting upload...')
+        update_progress(task_id, total_file_n = N_upload_files, current_file_n = 0, step_n = 0, total_step = 3, status='starting upload...')
         print(f" > calling start_upload with:\n task_id:{task_id}, \n upload_files:{upload_files}, \n N_upload_files:{N_upload_files}, \n process_folder:{process_folder}, \n file_paths:{file_paths}")        
-        socketio.start_background_task(tasks.start_upload, current_app._get_current_object(), task_id, upload_files, N_upload_files, process_folder, destinations, file_paths)
+        extensions.socketio.start_background_task(tasks.start_upload, current_app._get_current_object(), task_id, upload_files, destinations)
             
-        return jsonify(UPLOAD_PROGRESS_TRACKER[task_id]), 200
+        return jsonify(extensions.UPLOAD_PROGRESS_TRACKER[task_id]), 200
     
     except Exception as e:
         print(f"❌ Upload Error: {str(e)}")
         update_progress(task_id, status=f"Failed to upload files: {str(e)}", state="Error")
-        return jsonify(UPLOAD_PROGRESS_TRACKER[task_id]), 500
+        return jsonify(extensions.UPLOAD_PROGRESS_TRACKER[task_id]), 500
 
 @upload_bp.route("/progress/<task_id>", methods=["GET"])
-def upload_progress(task_id):
-    # Return progress for a specific task
-    progress = UPLOAD_PROGRESS_TRACKER.get(task_id)
+def get_progress(task_id):
+    progress = extensions.UPLOAD_PROGRESS_TRACKER.get(task_id)
     if progress:
         return jsonify(progress), 200
     else:
         return jsonify({"error": "Task not found"}), 404
+    
+@upload_bp.route("/progress/<task_id>", methods=["POST"])
+def update_progress_route(task_id):
+    
+    data = request.json or {}
+    update_progress(
+        task_id,
+        status=data.get("status"),
+        current_file_name=data.get("current_file_name"),
+        current_file_n=data.get("current_file_n"),
+        state=data.get("state")
+    )
+    return jsonify({"ok": True}), 200

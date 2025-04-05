@@ -1,3 +1,6 @@
+import {init as initSocket} from "./sockets.js";
+
+const socket = initSocket();
 socket.emit("request_code");
 
 socket.on("code_list", function(codeFiles) {

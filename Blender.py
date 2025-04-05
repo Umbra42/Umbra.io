@@ -2,12 +2,19 @@ import os
 import urllib
 import zipfile
 import tarfile
-import subprocess
 from flask import current_app
-from extensions import UPLOAD_PROGRESS_TRACKER
 from Upload import update_progress
-    
+
+def check_install_blender(current_app):
+    with current_app.app_context():
+        blender_path = blender_exists(current_app.config['APPS_PATH'])
+        if not blender_path:
+            blender_path = install_blender(current_app)
+            print(blender_path)
+        return blender_path
+
 def blender_exists(path):
+    update_progress(status="Checking for Blender installation")
     print(f"checking for blender at {path}")
     exe_name = "blender.exe" if os.name == "nt" else "blender"
     for folder in os.listdir(path):
@@ -16,12 +23,34 @@ def blender_exists(path):
             for file in os.listdir(folder_path):
                 if file.strip().lower() == exe_name:
                     blender_path = os.path.join(folder_path, file)
+                    update_progress(status="Blender found")
                     print(f"found blender at: {blender_path}")
                     return blender_path
-
+    update_progress(status="Blender not found")
     print("blender not found")
     return None 
+
+def install_blender():
+    if current_app.config['SYSTEM'] == "Windows":
+        url = "https://ftp.nluug.nl/pub/graphics/blender/release/Blender4.1/blender-4.1.0-windows-x64.zip"        
+    elif current_app.config['SYSTEM'] == "Linux":
+        url = "https://ftp.nluug.nl/pub/graphics/blender/release/Blender4.1/blender-4.1.0-linux-x64.tar.xz"
     
+    match current_app.config['SYSTEM']:
+        case "Windows":
+            print("downloading zip for windows")
+            compressed_path = download_blender(url)            
+            exe_path = extract_to(compressed_path)
+
+        case "Linux":
+            print("downloading zip for linux")
+            compressed_path = download_blender(url)
+            exe_path = extract_to(compressed_path)
+
+        case _:
+            print(f"Unsupported system: {current_app.config['SYSTEM']}")
+    return exe_path
+
 def download_blender(url):
     file_name = url.rstrip('/').split('/')[-1]
     compressed_path = os.path.join(current_app.config['APPS_PATH'], file_name)    
@@ -72,50 +101,12 @@ def extract_to(compressed_path):
                 except Exception as e:
                     print(f"Error extracting tarball: {e}")
                     raise
-    
 
-def run_conversion(task_id, input, output, path):
-    try:
-        print(f" > run_converion called with: \n upload_progress: {UPLOAD_PROGRESS_TRACKER[task_id]} \n inputpath: {input}\n outputpath: {output}\n blenderpath: {path}\n")
-        update_progress(task_id, status='running conversion script', state='converting')
-        script_path = os.path.join(os.getcwd(), 'scripts', 'convert.py')
-        print(f" script: {script_path}\n")
-        command = [ 
-            path,
-            '--background', 
-            '--python', 
-            script_path,
-            '--',
-            input,
-            output,
-        ]
-        print(f" command: {command}\n")
-
-        result = subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, check=True)
-        print("Blender output:", result.stdout)
-        print("Blender errors:", result.stderr)
-        if result.returncode != 0:
-            print("Error: Blender conversion failed")
-            return False
-        print("Conversion successful.")
-    except subprocess.CalledProcessError as e:
-        print(f"Blender script failed with return code: {e.returncode}")
-        return False
-    except PermissionError:
-        print(f"You do not have permissions to save the converted file here: {output}")
-        return False
-    except Exception as e:
-        print(f"An error occurred: {e}")
-        return False
-    return True
-
-def start_blender_listener(app):
-    script = os.path.join(os.getcwd(), 'scripts', 'blender_listener.py')
-    blender = app.config["BLENDER_PATH"]
-    upload_folder = app.config["PROCESS_FOLDER"]
-    display_folder = app.config["MODELS_FOLDER"]
-
-    subprocess.Popen([blender, "--background", "--python", script, "--", upload_folder, display_folder])
-
+def is_running(process):
+    if process and process.poll() is None:
+        print("blender is running")
+        return True
+    print("blender is not running")
+    return False
 
 

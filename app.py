@@ -1,7 +1,6 @@
 import os
 import platform
 import logging
-import subprocess
 
 from flask import Flask
 from flask_session import Session
@@ -9,7 +8,7 @@ from flask_cors import CORS
 from extensions import socketio
 from tasks import init_blender
 from Upload import make_folder, build_index
-from Blender import start_blender_listener
+
 
 def register_blueprints(app):
     from blueprints.auth import auth_bp
@@ -40,14 +39,13 @@ def create_app():
     app.config["CODE_FOLDER"] = make_folder(os.path.join('files', 'code'))
     app.config["PROJECTS_FOLDER"] = make_folder(os.path.join('files', 'projects'))
     app.config["FILE_INDEX"] = build_index("/files")
+    app.config["ALLOWED_EXTENSIONS"] = {"blend", "glb", "img", "svg", "jpg", "md", "txt", "py"}
     app.config["SYSTEM"] = platform.system()
     app.config["APPS_PATH"] = make_folder(os.path.join(os.getcwd(), 'apps'))
-    app.config["BLENDER_PATH"] = init_blender(app)
-    app.config["ALLOWED_EXTENSIONS"] = {"blend", "md", "txt", "py"}
+    app.config["BLENDER_PATH"] = None
 
     Session(app)
     register_blueprints(app)
-    start_blender_listener(app)
     socketio.init_app(app)
         
     return app

@@ -5,6 +5,7 @@ import * as modal from "./modal.js";
 import * as mapcanvas from "./mapcanvas.js";
 import * as upload from "./upload.js";
 import * as upload_progress from "./upload_progress.js";
+import * as blender from "./blender.js";
 
 try {
   document.addEventListener('DOMContentLoaded', () => {
@@ -49,7 +50,9 @@ try {
     const progressText = document.getElementById('progressText');
     upload_progress.init(socketInstance, state, status, consoleOutput, totalProgressDail, uploadProgressBar, progressText);
   
-
+    // init blender
+    blender.init();
+    
   });
 } catch (error) {
   console.error(error);
