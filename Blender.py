@@ -115,7 +115,7 @@ def is_running(process):
 def run_listener():
     try:
         data = request.get_json()
-        task_id = data.get("task_id")
+        task_id = data.get("task_id") or "blender"
         process_folder = current_app.config["PROCESS_FOLDER"]
         glb_folder = current_app.config["MODELS_FOLDER"]
         progress = json.dumps(extensions.UPLOAD_PROGRESS_TRACKER.get(task_id, {}))
@@ -133,6 +133,8 @@ def run_listener():
                 task_id,
                 progress
             ])
+        
+        blender_progress(status="Started Blender Listener")
         return jsonify({"status": "started", "message": "Blender Listener Started"})
     except Exception as e:
         blender_progress(status=f"Failed to start Blender Listener {e}")

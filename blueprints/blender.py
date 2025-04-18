@@ -13,13 +13,13 @@ def check_blender():
     
 @blender_bp.route("/start", methods=["POST"])
 def start_blender_listener():
-    blender_progress(status="Starting Blender Listener")
     if not current_app.config["BLENDER_PATH"]:
         current_app.config["BLENDER_PATH"] = init_blender(current_app)
     
     process = extensions.WATCHER_PROCESS
 
     if not is_running(process):
+        blender_progress(status="Starting Blender Listener")
         return run_listener()
     else:
         blender_progress(status="Blender Listener already running")
