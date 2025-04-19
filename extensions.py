@@ -1,4 +1,4 @@
-#import sqlite3 as SQL
+#TODO: import sqlite3 as SQL
 from cs50 import SQL
 db = SQL("sqlite:///project.db")
 

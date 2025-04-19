@@ -1,23 +1,25 @@
 import os
-import time
+import sys
+import subprocess
+
 from Upload import commit, update_progress, blender_progress, init_progress_tracker
 from extensions import UPLOAD_PROGRESS_TRACKER
-from Blender import blender_exists
+from Blender import blender_exists, install_blender, is_running
+from flask import json, current_app
 
 def init_blender(app, emit=True):  
     if "blender" not in UPLOAD_PROGRESS_TRACKER:
         init_progress_tracker(task_id="blender")
 
-    if emit:
-        blender_progress(status="Checking Blender installation")
+    if emit: blender_progress(status="Checking Blender installation")
 
     with app.app_context():
         try:
             blender_path = blender_exists(app.config['APPS_PATH'], emit=emit)
             if blender_path is None:
-                raise FileNotFoundError("Blender executable not found.")
-            if emit:
-                blender_progress(status="Blender found", state="Complete")
+                if emit: blender_progress(status="Blender Not found", state="Initializing")
+                blender_path = install_blender(app)
+            if emit: blender_progress(status="Blender found", state="Complete")
             print(f"Blender initialized at {blender_path}")
             return blender_path
         except Exception as e:
@@ -25,6 +27,41 @@ def init_blender(app, emit=True):
                 blender_progress(status="Blender not found", state="Error")
             print(f"Failed to initialize Blender: {e}")
             raise
+
+def launch_listener():
+    if is_running(WATCHER_PROCESS):
+        blender_progress(status="Blender Listener already running")
+        return
+
+    blender_progress(status="Passing data to and starting Blender Listener script")
+    blender = current_app.config["BLENDER_PATH"]
+    script = os.path.join(os.getcwd(), 'scripts', 'blender_listener.py')
+    process_folder = current_app.config["PROCESS_FOLDER"]
+    glb_folder = current_app.config["MODELS_FOLDER"]
+    progress = json.dumps(init_progress_tracker(task_id="blender"))
+
+    cmd = [
+        blender,
+        "--factory-startup", 
+        "--background", 
+        "--python", 
+        script, 
+        "--",
+        process_folder,
+        glb_folder, 
+        progress
+    ]         
+    
+    WATCHER_PROCESS = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    print(f"Blender Listener started with command: {cmd}")
+
+def terminat_listener():
+    blender_progress(status="Terminating Blender Listener")
+    if is_running(WATCHER_PROCESS):
+        WATCHER_PROCESS.terminate()
+        WATCHER_PROCESS.wait()
+        WATCHER_PROCESS = None
+        blender_progress(status="Blender Listener Termninated")
 
 def start_upload(app, task_id, upload_files, destinations):
     with app.app_context():
@@ -64,14 +101,7 @@ def start_upload(app, task_id, upload_files, destinations):
                     print(f"going to upload to: {upload_path}")
 
             update_progress(task_id, status="awaiting conversion", state="Waiting")
-            timeout = 60
-            start_time = time.time()
-            while not os.path.exists(upload_path):
-                if time.time() - start_time > timeout:
-                    print("blender timedout")
-                    raise TimeoutError
-                time.sleep(2)
-
+     
             print(" > calling commit")
             update_progress(task_id, status='commiting file name and location to database', state="Finalizing")
             commit(task_id, file, upload_path, file_name, file_type)

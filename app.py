@@ -9,7 +9,6 @@ from extensions import socketio
 from tasks import init_blender
 from Upload import make_folder, build_index
 
-
 def register_blueprints(app):
     from blueprints.auth import auth_bp
     from blueprints.main import main_bp
@@ -47,7 +46,7 @@ def create_app():
     Session(app)
     register_blueprints(app)
     socketio.init_app(app)
-        
+
     return app
 
 if __name__ == '__main__':

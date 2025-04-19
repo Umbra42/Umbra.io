@@ -25,22 +25,18 @@ export function init() {
     }
 }
 
-export function startCheckBlender() {
-    fetch('/blender/check')
-    .then(res => res.json())
-    .then(data => {
-        if (data.blender) {
-            fetch("blender/start", { 
-                method: "POST", 
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({ task_id: data.task_id })
-            });
-    } else {
-        alert("Blender not found. installing now...");
-    }
-});
+export async function ensureBlender() {
+    const response = await fetch("blender/start", { method: "POST" });
+    const { status , message } = await response.json();
+    console.log("Blender Start Status:", status, "\n", "Message:", message);
 }
 
-export function stopBlender() {
-    fetch("blender/stop", { method: "POST" });
+export async function stopBlender() {
+    const response = await fetch("blender/stop", { method: "POST" });
+    const { status , message } = await response.json();
+    console.log("Blender Stop Status:", status, "\n", "Message:", message);
 }
+
+document.addEventListener("DOMContentLoaded", () => {
+    ensureBlender();
+  });

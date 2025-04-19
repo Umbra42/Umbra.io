@@ -1,19 +1,9 @@
 import os
-import subprocess
 import urllib
 import zipfile
 import tarfile
-import extensions
-from flask import current_app, json, jsonify, request
+from flask import current_app
 from Upload import blender_progress
-
-def check_install_blender(current_app, emit=True):
-    with current_app.app_context():
-        blender_path = blender_exists(current_app.config['APPS_PATH'], emit=emit)
-        if not blender_path:
-            blender_path = install_blender(current_app)
-            print(blender_path)
-        return blender_path
 
 def blender_exists(path, emit=True):
     blender_progress(status="Checking for Blender installation", emit=emit)
@@ -98,7 +88,7 @@ def extract_to(compressed_path):
                     os.remove(compressed_path)
                     print(f"File {compressed_path} has been removed successfully")
                     path = compressed_path.rstrip(".tar1")
-                    return tar_ref
+                    return path
 
                 except Exception as e:
                     print(f"Error extracting tarball: {e}")
@@ -112,30 +102,3 @@ def is_running(process):
     return False
 
 
-def run_listener():
-    try:
-        data = request.get_json()
-        task_id = data.get("task_id") or "blender"
-        process_folder = current_app.config["PROCESS_FOLDER"]
-        glb_folder = current_app.config["MODELS_FOLDER"]
-        progress = json.dumps(extensions.UPLOAD_PROGRESS_TRACKER.get(task_id, {}))
-        blender_progress(status="Passing data to and starting Blender Listener script")
-        blender = current_app.config["BLENDER_PATH"]
-        script = os.path.join(os.getcwd(), 'scripts', 'blender_listener.py')
-        extensions.WATCHER_PROCESS = subprocess.Popen([
-                blender, 
-                "--background", 
-                "--python", 
-                script, 
-                "--",
-                process_folder,
-                glb_folder, 
-                task_id,
-                progress
-            ])
-        
-        blender_progress(status="Started Blender Listener")
-        return jsonify({"status": "started", "message": "Blender Listener Started"})
-    except Exception as e:
-        blender_progress(status=f"Failed to start Blender Listener {e}")
-        return jsonify({"status": "error", "message": str(e)},500)

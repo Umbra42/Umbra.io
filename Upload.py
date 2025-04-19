@@ -2,7 +2,6 @@ import os
 import stat
 import time
 from werkzeug.utils import secure_filename
-from helpers import apology
 from extensions import socketio, db, UPLOAD_PROGRESS_TRACKER
 from flask import current_app
 
@@ -67,14 +66,16 @@ def commit(task_id, file, destination_path, file_name, file_type):
         except Exception as e:
             print(f"failed to commit: {e}")
             update_progress(task_id, status=f'failed to commit with error: {e}', state="ERROR")
-            return apology(f"An error occurred: {e}", 500)
-        
+            return f"An error occurred: {e}", 500
+
+''' #TODO: implement this function to track progress of the upload       
 def track_step(task_id, current_file_name, step_n, total_steps, status):
     now = time.strftime("%Y-%m-%d %H:%M:%S")
     step = { "step" : step_n, "status" : status, "time" : now }
     tracker = UPLOAD_PROGRESS_TRACKER.get(task_id, {})
     if tracker and current_file_name in tracker["files"]:
         tracker["files"][current_file_name].append(step)
+'''
 
 def blender_progress(**update):
     update_progress(task_id="blender", **update)
@@ -107,7 +108,7 @@ def build_index(root):
             file_index[file] = os.path.join(root, file)
     return file_index
 
-# todo: correct;lty calculate total steps
+# todo: correctlty calculate total steps
 def calculate_total_steps(update):
     n_files = update.get("total_file_n", 0)
     steps_per_file = 3

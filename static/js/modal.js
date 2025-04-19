@@ -1,4 +1,4 @@
-import { startCheckBlender, stopBlender } from './blender.js';
+import { ensureBlender, stopBlender } from './blender.js';
 
 export function init(uploadNavBtn, closeModal, uploadModal, fileInput, overallProgressDiv) {
   // open modal
@@ -6,7 +6,7 @@ export function init(uploadNavBtn, closeModal, uploadModal, fileInput, overallPr
     uploadNavBtn.addEventListener('click', () => {
       console.log('Nav Upload button clicked');
       uploadModal.classList.add('active');
-      startCheckBlender();
+      ensureBlender();
     });
   } else {
     console.warn('Upload button not found');

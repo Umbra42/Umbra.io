@@ -52,24 +52,3 @@ def upload():
         print(f"❌ Upload Error: {str(e)}")
         update_progress(task_id, status=f"Failed to upload files: {str(e)}", state="Error")
         return jsonify(extensions.UPLOAD_PROGRESS_TRACKER[task_id]), 500
-
-@upload_bp.route("/progress/<task_id>", methods=["GET"])
-def get_progress(task_id):
-    progress = extensions.UPLOAD_PROGRESS_TRACKER.get(task_id)
-    if progress:
-        return jsonify(progress), 200
-    else:
-        return jsonify({"error": "Task not found"}), 404
-    
-@upload_bp.route("/progress/<task_id>", methods=["POST"])
-def update_progress_route(task_id):
-    
-    data = request.json or {}
-    update_progress(
-        task_id,
-        status=data.get("status"),
-        current_file_name=data.get("current_file_name"),
-        current_file_n=data.get("current_file_n"),
-        state=data.get("state")
-    )
-    return jsonify({"ok": True}), 200

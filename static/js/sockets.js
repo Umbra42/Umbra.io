@@ -1,7 +1,7 @@
 // init sockets
 export function init() {
   const socket = io.connect(window.location.origin, {
-    transports: ['websocket', 'polling'],
+    transports: ['websocket'],
     reconnection: true,
     reconnectionAttempts: 3,
     reconnectionDelay: 1000,

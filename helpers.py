@@ -1,27 +1,26 @@
-from cs50 import SQL
 from flask import redirect, render_template, session
 from functools import wraps
-
-
-db = SQL("sqlite:///project.db")
-                
+from extensions import db
+from werkzeug.security import generate_password_hash, check_password_hash                
 def notify():
     apology("TODO", 400)
 
 def apology(message, code=400):
     """Render message as an apology to user."""
-    def escape(s):
-        """
-        Escape special characters.
+    try:
+        def escape(s):
+            """
+            Escape special characters.
 
-        https://github.com/jacebrowning/memegen#special-characters
-        """
-        for old, new in [("-", "--"), (" ", "-"), ("_", "__"), ("?", "~q"),
-                         ("%", "~p"), ("#", "~h"), ("/", "~s"), ("\"", "''")]:
-            s = s.replace(old, new)
-        return s
-    return render_template("apology.html", top=code, bottom=escape(message)), code
-
+            https://github.com/jacebrowning/memegen#special-characters
+            """
+            for old, new in [("-", "--"), (" ", "-"), ("_", "__"), ("?", "~q"),
+                            ("%", "~p"), ("#", "~h"), ("/", "~s"), ("\"", "''")]:
+                s = s.replace(old, new)
+            return s
+        return render_template("apology.html", top=code, bottom=escape(message)), code
+    except RuntimeError as e:
+        return e
 def login_required(f):
     """
     Decorate routes to require login.
