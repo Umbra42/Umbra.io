@@ -1,5 +1,6 @@
 import uuid
 import tasks
+import os
 from extensions import socketio, UPLOAD_PROGRESS_TRACKER
 from flask import Blueprint, request, jsonify, session, current_app
 from flask_socketio import emit
@@ -53,7 +54,8 @@ def upload():
         print(f"❌ Upload Error: {str(e)}")
         update_progress(task_id, status=f"Failed to upload files: {str(e)}", state="Error")
         return jsonify(UPLOAD_PROGRESS_TRACKER[task_id]), 500
-    
+
+# TODO: corospond with litener for commit call    
 @socketio.on("converted", namespace="/upload")
 def on_converted(data):
     task_id = data.get("task_id")
@@ -61,5 +63,8 @@ def on_converted(data):
     print(f"Received converted files: {processed_files} for task ID: {task_id}")
     if task_id in UPLOAD_PROGRESS_TRACKER:
         update_progress(task_id, status="Files converted", state="Complete", processed_files=processed_files)
+        for file_path in processed_files:
+            file_name = os.path.basename(file_path)
+            commit(task_id, open(file_path, 'rb'), file_path, file_name, os.path.splitext(file_name)[1])
     else:
         print(f"Task ID {task_id} not found in progress tracker.")

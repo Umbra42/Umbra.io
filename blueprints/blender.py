@@ -7,6 +7,7 @@ blender_bp = Blueprint('blender', __name__)
 @blender_bp.route("/start", methods=["POST"])
 def start_listener():
     print(" > /blender/start called")
+    
     if not current_app.config["BLENDER_PATH"]:
         print(" > /blender/start: Blender path not set")
         current_app.config["BLENDER_PATH"] = init_blender(current_app)

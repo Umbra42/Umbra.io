@@ -1,10 +1,8 @@
 // init sockets
 export function init() {
-  const socket = io.connect(window.location.origin, {
+  const socket = io({
     transports: ['websocket'],
-    reconnection: true,
     reconnectionAttempts: 3,
-    reconnectionDelay: 1000,
   });
 
   socket.on('connect', () => {
