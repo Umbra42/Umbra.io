@@ -1,9 +1,10 @@
-import extensions
 import uuid
 import tasks
+from extensions import socketio, UPLOAD_PROGRESS_TRACKER
 from flask import Blueprint, request, jsonify, session, current_app
+from flask_socketio import emit
 from helpers import login_required
-from Upload import process_paths, is_unique, is_allowed, update_progress, init_progress_tracker
+from Upload import process_paths, is_unique, is_allowed, update_progress, init_progress_tracker, commit
 
 upload_bp = Blueprint('upload', __name__)
 
@@ -44,11 +45,21 @@ def upload():
 
         update_progress(task_id, total_file_n = N_upload_files, current_file_n = 0, step_n = 0, total_step = 3, status='starting upload...')
         print(f" > calling start_upload with:\n task_id:{task_id}, \n upload_files:{upload_files}, \n N_upload_files:{N_upload_files}, \n process_folder:{process_folder}, \n file_paths:{file_paths}")        
-        extensions.socketio.start_background_task(tasks.start_upload, current_app._get_current_object(), task_id, upload_files, destinations)
+        socketio.start_background_task(tasks.start_upload, current_app._get_current_object(), task_id, upload_files, destinations)
             
-        return jsonify(extensions.UPLOAD_PROGRESS_TRACKER[task_id]), 200
+        return jsonify(UPLOAD_PROGRESS_TRACKER[task_id]), 200
     
     except Exception as e:
         print(f"❌ Upload Error: {str(e)}")
         update_progress(task_id, status=f"Failed to upload files: {str(e)}", state="Error")
-        return jsonify(extensions.UPLOAD_PROGRESS_TRACKER[task_id]), 500
+        return jsonify(UPLOAD_PROGRESS_TRACKER[task_id]), 500
+    
+@socketio.on("converted", namespace="/upload")
+def on_converted(data):
+    task_id = data.get("task_id")
+    processed_files = data.get("processed_files", [])
+    print(f"Received converted files: {processed_files} for task ID: {task_id}")
+    if task_id in UPLOAD_PROGRESS_TRACKER:
+        update_progress(task_id, status="Files converted", state="Complete", processed_files=processed_files)
+    else:
+        print(f"Task ID {task_id} not found in progress tracker.")

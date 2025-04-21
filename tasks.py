@@ -1,11 +1,10 @@
 import os
-import sys
 import subprocess
-
+import threading
 from Upload import commit, update_progress, blender_progress, init_progress_tracker
-from extensions import UPLOAD_PROGRESS_TRACKER
-from Blender import blender_exists, install_blender, is_running
-from flask import json, current_app
+from extensions import UPLOAD_PROGRESS_TRACKER, WATCHER_PROCESS
+from Blender import blender_exists, install_blender, is_running, _relay
+from flask import json, current_app, session
 
 def init_blender(app, emit=True):  
     if "blender" not in UPLOAD_PROGRESS_TRACKER:
@@ -29,6 +28,7 @@ def init_blender(app, emit=True):
             raise
 
 def launch_listener():
+    global WATCHER_PROCESS
     if is_running(WATCHER_PROCESS):
         blender_progress(status="Blender Listener already running")
         return
@@ -39,7 +39,8 @@ def launch_listener():
     process_folder = current_app.config["PROCESS_FOLDER"]
     glb_folder = current_app.config["MODELS_FOLDER"]
     progress = json.dumps(init_progress_tracker(task_id="blender"))
-
+    task_id = session[task_id]
+    
     cmd = [
         blender,
         "--factory-startup", 
@@ -49,14 +50,17 @@ def launch_listener():
         "--",
         process_folder,
         glb_folder, 
-        progress
+        task_id,
+        progress,
     ]         
     
-    WATCHER_PROCESS = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    WATCHER_PROCESS = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, bufsize=1)
+    threading.Thread(target=_relay, args=(WATCHER_PROCESS.stdout), daemon=True).start()
     print(f"Blender Listener started with command: {cmd}")
 
 def terminat_listener():
     blender_progress(status="Terminating Blender Listener")
+    global WATCHER_PROCESS
     if is_running(WATCHER_PROCESS):
         WATCHER_PROCESS.terminate()
         WATCHER_PROCESS.wait()

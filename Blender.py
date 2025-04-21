@@ -102,3 +102,6 @@ def is_running(process):
     return False
 
 
+def _relay(pipe):
+    for line in iter(pipe.readline,''):
+        print("[BLENDER LISTENER] ", line.strip())

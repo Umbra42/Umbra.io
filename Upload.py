@@ -98,6 +98,7 @@ def init_progress_tracker(task_id, **update):
         "current_file_n" : 0,
         "step_n": 0,
         "total_steps": calculate_total_steps(update),
+        "processed" : {},
         "status" : 'Init upload...'
     }
 
