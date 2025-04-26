@@ -16,10 +16,6 @@ def get_project(filename):
     return send_from_directory(current_app.config["PROJECTS_FOLDER"], filename)
 
 def register_socket_events(socketio):
-    @socketio.on("Progress_update", namespace="/upload")
-    def on_progress(data):
-        socketio.emit("progress_update", data, namespace="/upload")
-
     @socketio.on("request_models")
     def send_models():
         models = [f for f in os.listdir(current_app.config["MODELS_FOLDER"]) if f.endswith(('.glb', '.gltf', '.obj'))]

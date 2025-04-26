@@ -1,4 +1,5 @@
 import os
+import sys
 import urllib
 import zipfile
 import tarfile
@@ -95,10 +96,26 @@ def extract_to(compressed_path):
                     raise
 
 def is_running(process):
-    if process and process.poll() is None:
-        print("blender is running")
+    if process is None:
+        print("blender is running", flush=True)
+        return False
+    rc = process.poll()
+    print(f"[is_running] pid={getattr(process, 'pid', None)}, poll()={rc}", flush=True)
+    if rc is None:
+        print("blender is running", flush=True)
         return True
-    print("blender is not running")
-    return False
+    else:
+        print("blender is not running", flush=True)
+        return False    
 
 
+def relay(pipe, name):
+    for raw in pipe:
+        text = raw.rstrip("\n")
+        tag  = f"[BLENDER LISTENER {name}]"
+
+        sys.stdout.write(f"{tag} {text}\n")
+        sys.stdout.flush()
+
+        from Upload import blender_progress
+        blender_progress(status=text)

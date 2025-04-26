@@ -1,9 +1,11 @@
-import extensions
 import uuid
 import tasks
+
+
+from extensions import socketio, UPLOAD_PROGRESS_TRACKER
 from flask import Blueprint, request, jsonify, session, current_app
 from helpers import login_required
-from Upload import process_paths, is_unique, is_allowed, update_progress, init_progress_tracker
+from Upload import process_paths, is_unique, is_allowed, update_progress, init_progress_tracker, commit
 
 upload_bp = Blueprint('upload', __name__)
 
@@ -19,7 +21,7 @@ def upload():
         print(f"Generated task ID: {task_id}")
         update_progress(task_id, status='getting file list...')
         upload_files = request.files.getlist('files')
-        
+
         update_progress(task_id, status='validating files and environment')
         upload_files[:] = [file for file in upload_files if is_allowed(file.filename) and is_unique(file.filename)] 
         N_upload_files = len(upload_files)
@@ -44,11 +46,46 @@ def upload():
 
         update_progress(task_id, total_file_n = N_upload_files, current_file_n = 0, step_n = 0, total_step = 3, status='starting upload...')
         print(f" > calling start_upload with:\n task_id:{task_id}, \n upload_files:{upload_files}, \n N_upload_files:{N_upload_files}, \n process_folder:{process_folder}, \n file_paths:{file_paths}")        
-        extensions.socketio.start_background_task(tasks.start_upload, current_app._get_current_object(), task_id, upload_files, destinations)
+        socketio.start_background_task(tasks.start_upload, current_app._get_current_object(), task_id, upload_files, destinations)
             
-        return jsonify(extensions.UPLOAD_PROGRESS_TRACKER[task_id]), 200
+        return jsonify(UPLOAD_PROGRESS_TRACKER[task_id]), 200
     
     except Exception as e:
         print(f"❌ Upload Error: {str(e)}")
         update_progress(task_id, status=f"Failed to upload files: {str(e)}", state="Error")
-        return jsonify(extensions.UPLOAD_PROGRESS_TRACKER[task_id]), 500
+        return jsonify(UPLOAD_PROGRESS_TRACKER[task_id]), 500
+
+
+@socketio.on("get_task", namespace="/upload")
+def get_task():
+    pending = [
+        task_id for task_id, progress in UPLOAD_PROGRESS_TRACKER.items() 
+        if progress.get("state") == "Waiting"
+    ]
+    task_id = pending[0] if pending else None
+    return {"task_id": task_id, "progress": UPLOAD_PROGRESS_TRACKER.get(task_id, {})} if task_id else {"task_id": None}
+
+@socketio.on("converted", namespace="/upload")
+def on_converted(data):
+    task_id = data.get("task_id")
+    processed = data.get("processed", {})
+
+    for og_file , meta in processed.items():
+        file_obj = meta["file_obj"]
+        upload_path = meta["glb_path"]
+        file_name = meta["file_name"]
+        file_type = meta["file_type"]
+        with open(upload_path, "rb") as file_obj:
+            commit(task_id, file_obj, upload_path, file_name, file_type)
+    
+    update_progress(
+        task_id,
+        status="All conversions committed",
+        state="Complete",
+        processed_files=[m["glb_path"] for m in processed.values()]
+    )
+        
+@socketio.on("progress_update", namespace="/upload")
+def progress_update(data):
+    task_id = data.get("task_id")
+    update_progress(task_id, data)

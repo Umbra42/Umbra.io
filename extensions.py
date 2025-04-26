@@ -3,7 +3,12 @@ from cs50 import SQL
 db = SQL("sqlite:///project.db")
 
 from flask_socketio import SocketIO
-socketio = SocketIO(cors_allowed_origins="*", async_mode="eventlet")
+socketio = SocketIO(
+    cors_allowed_origins="*", 
+    async_mode="eventlet",
+    logger=True,
+    engineio_logger=True,
+    )
 
 WATCHER_PROCESS = None
 UPLOAD_PROGRESS_TRACKER = {}

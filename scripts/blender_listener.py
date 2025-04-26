@@ -1,91 +1,120 @@
-import bpy
-import json
-import os
-import time
-import sys
-import socketio
+import os, time, sys, socketio, subprocess, argparse, functools, builtins
+from pathlib import Path
 
-sio = socketio.Client()
-PROGRESS = {}
-processed = []
+print = functools.partial(builtins.print, flush=True)
 
-def validate_args():  
-    if "--" in sys.argv:
-        args = sys.argv[sys.argv.index("--") + 1:]
-        print(f"[BLENDER SCRIPT] ARGS: {args}")
-    else:
-        print("[BLENDER SCRIPT] Error: Missing '--' delimiter in arguments")
+PROGRESS = {
+    "task_id": "",
+    "state": "",
+    "status": "", 
+    "current_file_name": "",
+    "total_file_n": "",
+    "step_n": 0,
+    "processed": {},  
+}
+
+processed = set()
+
+
+def parse_args():
+    global BLENDER_EXE, PROCESS_FOLDER, GLB_FOLDER, SERVER_URL
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--blender_exe", type=str, required=True)
+    parser.add_argument("--process_folder", type=str, required=True)
+    parser.add_argument("--glb_folder", type=str, required=True)
+    parser.add_argument("--server_url", type=str, default="http://127.0.0.1:5000")
+    args = parser.parse_args()
+    BLENDER_EXE = args.blender_exe
+    PROCESS_FOLDER = args.process_folder
+    GLB_FOLDER = args.glb_folder
+    SERVER_URL = args.server_url
+
+def connect_socetio():
+    global sio
+    sio = socketio.Client(logger=True, engineio_logger=True)
+    try:
+        print(f"Connecting to server at {SERVER_URL} ...", flush=True)
+        sio.connect(SERVER_URL, namespaces=["/upload"], wait=True, wait_timeout=30)
+        print("Connected to server")
+    except Exception as e:
+        print(f"Failed to connect to server: {e}")
         sys.exit(1)
 
-    if len(args) < 4:
-        print("[BLENDER_SCRIPT] Error: Missing required arguments for either: PROCESS_FOLDER, DISPLAY_FOLDER, TASK_ID and PROGRESS_json.")
-        sys.exit(1)
-    return args
-  
-def process_new_files(PROCESS_FOLDER, GLB_FOLDER, TASK_ID):
+def convert_file(blend_path, glb_path):
+    cmd = [
+        BLENDER_EXE,
+        "--background",
+        "--python-expr",
+        (
+            f"import bpy; bpy.ops.wm.open_mainfile(filepath=r'{blend_path}'); bpy.ops.export_scene.gltf(filepath=r'{glb_path}', export_format='GLB')"
+        )
+    ]
+    subprocess.run(cmd, check=True)  
+
+def process_new_files(PROCESS_FOLDER, GLB_FOLDER):
     for filename in os.listdir(PROCESS_FOLDER):
-        if filename.endswith(".blend") or filename in processed:
+        if not filename.lower().endswith(".blend") or filename in processed:
+            
             continue
 
         blend_path = os.path.join(PROCESS_FOLDER, filename)
-        glb_name = filename.replace(".blend", ".glb")
+        glb_name = Path(filename).with_suffix(".glb").name
         glb_output = os.path.join(GLB_FOLDER, glb_name)
         emit_progress(status=f"Converting {filename}...", current_file_name=filename, state="Converting")
-        print(f"[BLENDER SCRIPT] Processing: \n     {blend_path} \n      ->      \n     {glb_output}")
+        print(f"Processing: \n     {blend_path} \n      ->      \n     {glb_output}")
 
         try:
-            bpy.ops.wm.open_mainfile(filepath=blend_path)
-            bpy.ops.export_scene.gltf(filepath=glb_output, export_format='GLB')
-            emit_progress(status=f"Converted {filename}", current_file_name=glb_name, state="Done")
-            print(f"[BLENDER SCRIPT]Successfully converted: {blend_path}")
-            processed.append(filename)
+            convert_file(blend_path, glb_output)
+            print(f"Successfully converted: {blend_path}")
             # maybe add backup of the blend file to a different location
             os.remove(blend_path)  
+            print(f"Removed: {blend_path}")
+            
+            entry = {
+                "file_obj": blend_path,
+                "glb_path": glb_output,
+                "file_name": glb_name,
+                "file_type": ".glb",
+            }
+            PROGRESS["processed"][filename] = entry
+            processed.add(filename)
+            sio.emit("converted", PROGRESS, namespace="/upload")
         except Exception as e:
-            print(f"[BLENDER SCRIPT] Failed to process {blend_path}: {e}")
-
-def emit_progress(**fields):
-    PROGRESS.update(fields)
-    payload = PROGRESS.copy()
+            print(f"Failed to process {blend_path}: {e}")
     
-    if "current_file_name" in fields:
-        current_file = fields["current_file_name"]
-        PROGRESS.setdefault("files", {}).setdefault(current_file, []).append({
-            "step": fields.get("step_n"),
-            "status": fields.get("status"),
-            "time": time.strftime("%Y-%m-%d %H:%M:%S")
-        })
+def emit_progress(**fields):
+    fields.setdefault("task_id", PROGRESS["task_id"])
+    PROGRESS.update(fields)
+    sio.emit("progress_update", PROGRESS, namespace="/upload")
 
-        payload["files"] = PROGRESS["files"][current_file]
-        print(f"[BLENDER SCRIPT] payload", payload)
-
-    try:
-        sio.emit("progress_update", payload, namespace="/upload")   
-    except Exception as e:
-        print(f"[BLENDER SCRIPT] Failed to report progress: {e}")
-        import traceback
-        traceback.print_exc()
     
 ''' TODO:
 def track_step(task_id, current_file_name, step_n, total_steps, status):
     now = time.strftime("%Y-%m-%d %H:%M:%S")
     step = { "step" : step_n, "status" : status, "time" : now }
     tracker = PROGRESS.get(task_id, {})
-    if tracker and current_file_name in tracker["files"]:
+    if tracker and current_file_name in tracker["files"]:`
         tracker["files"][current_file_name].append(step)
 '''
 
-def main():
-    print("[BLENDER SCRIPT] Listener started...")
-    PROCESS_FOLDER, GLB_FOLDER, TASK_ID, PROGRESS_json = validate_args()
-    PROGRESS.update(json.loads(PROGRESS_json))
-    print(f"[BLENDER SCRIPT] Listener started with: PROCESS_FOLDER= {PROCESS_FOLDER} \n GLB_FOLDER= {GLB_FOLDER} \n TASK_ID= {TASK_ID} \n json= {PROGRESS}")    
-
-    sio.connect("http://127.0.0.1:5000", namespaces=["/progress"])
-    emit_progress(status="Blender Listener started", state="Started")
-    while True:                  
+def listener_loop():
+    print("Listener started...")
+    print(f"Listener started with: \n BLENDER_EXE = {BLENDER_EXE} \n PROCESS_FOLDER= {PROCESS_FOLDER} \n GLB_FOLDER= {GLB_FOLDER}")    
+    
+    while True:
+        response = sio.call("get_task", namespace="/upload", timeout=10)    
+        task_id = response.get("task_id")
+        if not task_id:
+            print("No task found, waiting for new tasks...")
+            time.sleep(1)
+            continue
+        
+        PROGRESS["task_id"] = task_id
+        PROGRESS.update(response.get("progress", {}))
+        emit_progress(status="started processing", state="Started", task_id=task_id)
         process_new_files(PROCESS_FOLDER, GLB_FOLDER)
-        time.sleep(1)
 
 if __name__ == "__main__":
-    main()
+    parse_args()
+    connect_socetio()
+    listener_loop()

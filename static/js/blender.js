@@ -26,13 +26,13 @@ export function init() {
 }
 
 export async function ensureBlender() {
-    const response = await fetch("blender/start", { method: "POST" });
+    const response = await fetch("/blender/start", { method: "POST" });
     const { status , message } = await response.json();
     console.log("Blender Start Status:", status, "\n", "Message:", message);
 }
 
 export async function stopBlender() {
-    const response = await fetch("blender/stop", { method: "POST" });
+    const response = await fetch("/blender/stop", { method: "POST" });
     const { status , message } = await response.json();
     console.log("Blender Stop Status:", status, "\n", "Message:", message);
 }

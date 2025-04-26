@@ -43,7 +43,7 @@ def is_unique(file_name):
 def is_allowed(file):
     return file.lower().rsplit(".", 1)[-1] in current_app.config["ALLOWED_EXTENSIONS"]
 
-def commit(task_id, file, destination_path, file_name, file_type):
+def commit(task_id, file_obj, destination_path, file_name, file_type):
     with current_app.app_context():
         print(" > commit called")      
         update_progress(task_id, status= 'checking file size')
@@ -60,7 +60,7 @@ def commit(task_id, file, destination_path, file_name, file_type):
             )
             if file_type != ".blend" and file_type != ".glb":
                 with open(destination_path, "wb") as dest_file:
-                    dest_file.write(file.read())
+                    dest_file.write(file_obj.read())
             current_app.config["FILE_INDEX"][file_name] = destination_path
             print(f"{destination_path} commited successfuly")
         except Exception as e:
@@ -98,6 +98,7 @@ def init_progress_tracker(task_id, **update):
         "current_file_n" : 0,
         "step_n": 0,
         "total_steps": calculate_total_steps(update),
+        "processed" : {},
         "status" : 'Init upload...'
     }
 

@@ -2,7 +2,7 @@ import { ensureBlender, stopBlender } from './blender.js';
 
 export function init(fileInput, fileName, fileInputBtn, fileList, uploadModalBtn, uploadForm) {
     setTimeout(() => {
-        if (!fileInput || !fileName || !fileInputBtn || !fileList || !uploadModal) {
+        if (!fileInput || !fileName || !fileInputBtn || !fileList || !uploadModalBtn) {
             console.warn("One or more required elements are missing.");
             return;
         }
