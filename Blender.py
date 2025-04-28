@@ -1,10 +1,6 @@
-import os
-import sys
-import urllib
-import zipfile
-import tarfile
+import os, sys, subprocess, urllib, zipfile, tarfile
 from flask import current_app
-from Upload import blender_progress
+from Upload import blender_progress, update_progress
 
 def blender_exists(path, emit=True):
     blender_progress(status="Checking for Blender installation", emit=emit)
@@ -95,6 +91,39 @@ def extract_to(compressed_path):
                     print(f"Error extracting tarball: {e}")
                     raise
 
+def convert(task_id, process_folder, blend_name, destination_folder, glb_name):
+    print(f" > convert called")
+    blend_path = os.path.join(process_folder, blend_name)
+    glb_path = os.path.join(destination_folder, glb_name)
+    cmd= [
+        current_app.config['BLENDER_PATH'],
+        "-b",
+        blend_path,
+        "--python-expr",
+        (
+            "import bpy;" 
+            f"bpy.ops.export_scene.gltf(filepath=r'{glb_path}', export_format='GLB')"
+        )
+    ]
+    process = subprocess.Popen(
+        cmd, 
+        stdout=subprocess.PIPE, 
+        stderr=subprocess.STDOUT,
+        text=True,
+        bufsize=1,
+        )
+    print(f" > blender process started with: {cmd}")
+
+    for line in process.stdout:
+        update_progress(
+            task_id,
+            status=line.strip(),
+            state="Converting"
+        )
+    process.wait()
+    return glb_path
+#depricated
+'''
 def is_running(process):
     if process is None:
         print("blender is running", flush=True)
@@ -106,8 +135,7 @@ def is_running(process):
         return True
     else:
         print("blender is not running", flush=True)
-        return False    
-
+        return False
 
 def relay(pipe, name):
     for raw in pipe:
@@ -119,3 +147,4 @@ def relay(pipe, name):
 
         from Upload import blender_progress
         blender_progress(status=text)
+'''

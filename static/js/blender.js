@@ -24,7 +24,8 @@ export function init() {
         }, undefined, error => console.error("Error loading model:", error));
     }
 }
-
+/*
+ depricated
 export async function ensureBlender() {
     const response = await fetch("/blender/start", { method: "POST" });
     const { status , message } = await response.json();
@@ -40,3 +41,4 @@ export async function stopBlender() {
 document.addEventListener("DOMContentLoaded", () => {
     ensureBlender();
   });
+*/

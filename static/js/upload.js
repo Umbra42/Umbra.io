@@ -1,4 +1,4 @@
-import { ensureBlender, stopBlender } from './blender.js';
+// import { ensureBlender, stopBlender } from './blender.js';
 
 export function init(fileInput, fileName, fileInputBtn, fileList, uploadModalBtn, uploadForm) {
     setTimeout(() => {
@@ -9,7 +9,7 @@ export function init(fileInput, fileName, fileInputBtn, fileList, uploadModalBtn
         
         fileInputBtn.addEventListener('click', () => {
             fileInput.click();
-            ensureBlender();
+            //ensureBlender();
         });
 
         fileInput.addEventListener('change', () => {

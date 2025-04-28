@@ -1,9 +1,7 @@
 import os
-import subprocess
-import sys
 from Upload import commit, update_progress, blender_progress, init_progress_tracker
 from extensions import UPLOAD_PROGRESS_TRACKER, WATCHER_PROCESS, socketio
-from Blender import blender_exists, install_blender, is_running, relay
+from Blender import blender_exists, install_blender, convert
 from flask import current_app
 
 def init_blender(app, emit=True):  
@@ -27,49 +25,7 @@ def init_blender(app, emit=True):
             print(f"Failed to initialize Blender: {e}")
             raise
 
-def launch_listener():
-    global WATCHER_PROCESS
-    if is_running(WATCHER_PROCESS):
-        blender_progress(status="Blender Listener already running")
-        return
-
-    blender_progress(status="Passing data to and starting Blender Listener script")
-    blender = current_app.config["BLENDER_PATH"]
-    script = os.path.join(os.getcwd(), 'scripts', 'blender_listener.py')
-    process_folder = current_app.config["PROCESS_FOLDER"]
-    glb_folder = current_app.config["MODELS_FOLDER"]
-    
-    cmd = [
-        sys.executable, 
-        script,
-        "--blender_exe", blender,
-        "--process_folder", process_folder,
-        "--glb_folder",  glb_folder, 
-        "--server_url", "http://127.0.0.1:5000",
-    ]         
-    print(f"Blender Listener started with command: {cmd}")
-    
-    WATCHER_PROCESS = subprocess.Popen(
-        cmd, 
-        stdout=subprocess.PIPE, 
-        stderr=subprocess.PIPE, 
-        text=True, 
-        bufsize=1)
-    print(f"Blender Listener started with PID: {WATCHER_PROCESS.pid}")
-  
-    socketio.start_background_task(relay, WATCHER_PROCESS.stdout, "OUT")
-    socketio.start_background_task(relay, WATCHER_PROCESS.stderr, "ERR")
-
-def terminat_listener():
-    blender_progress(status="Terminating Blender Listener")
-    global WATCHER_PROCESS
-    if is_running(WATCHER_PROCESS):
-        WATCHER_PROCESS.terminate()
-        WATCHER_PROCESS.wait()
-        WATCHER_PROCESS = None
-        blender_progress(status="Blender Listener Termninated")
-
-def start_upload(app, task_id, upload_files, destinations):
+def start_upload(app, task_id, upload_files, destinations, process_folder):
     with app.app_context():
         print(f" > start_upload called")
         update_progress(task_id, state= "Running", status= 'Indexing files...', step_n=0)
@@ -83,15 +39,24 @@ def start_upload(app, task_id, upload_files, destinations):
             update_progress(task_id, status='matching file type...')
             match file_type:
                 case ".blend":
+                    blend_name = file_name
                     print(f"found {file_type}")             
                     update_progress(task_id, status='Starting conversion to glb...', state='Converting')
-                    destination = destinations["models"]
-                    file_name = os.path.join(os.path.splitext(file_name)[0] + ".glb")
-                    print("glb file name: ", file_name)
+                    
+                    destination_folder = destinations["models"]
+                    glb_name = os.path.join(os.path.splitext(blend_name)[0] + ".glb")
+                   
+                    print("glb file name: ", glb_name)
                     update_progress(task_id, status='setting upload path', state='Processing')
-                    upload_path = os.path.join(destination, file_name) 
-                    print(f"going to upload to: {upload_path}")
-                    update_progress(task_id, status="awaiting conversion", state="Waiting")
+                   
+                    glb_path = os.path.join(destination_folder, glb_name) 
+                    
+                    print(f"going to upload to: {glb_path}")
+                    update_progress(task_id, status="Converting .blend -> .glb", state="Converting")
+                    convert(task_id, process_folder ,blend_name, destination_folder, glb_name)
+                    with open(glb_path, "rb") as file_obj:
+                        commit(task_id, file_obj, glb_path, glb_name, file_type)
+                    continue
 
                 case ".md" | ".txt" | ".docx" | ".doc" | ".xlsx" | ".xlsm":
                     print(f"found {file_type}")
@@ -112,9 +77,55 @@ def start_upload(app, task_id, upload_files, destinations):
                     print(" > calling commit")
                     update_progress(task_id, status='commiting file name and location to database', state="Finalizing")
                     commit(task_id, file_obj, upload_path, file_name, file_type)
-
-
-        update_progress(task_id, status= 'Upload successful', state= 'Complete')
-        if task_id in UPLOAD_PROGRESS_TRACKER:
-            del UPLOAD_PROGRESS_TRACKER[task_id]
         return
+    
+# deprecated
+""" pain there is a misterious timeout when running the subprocess.Popen command,
+    so im just going to integrate the conversonlogic into the upload process
+    this is not ideal but it works for now.
+
+def launch_listener():
+    global WATCHER_PROCESS
+    if is_running(WATCHER_PROCESS):
+        blender_progress(status="Blender Listener already running")
+        return
+
+    blender_progress(status="Passing data to and starting Blender Listener script")
+    blender = current_app.config["BLENDER_PATH"]
+    script = os.path.join(os.getcwd(), 'scripts', 'blender_listener.py')
+    process_folder = current_app.config["PROCESS_FOLDER"]
+    glb_folder = current_app.config["MODELS_FOLDER"]
+    
+    cmd = [
+        sys.executable, 
+        script,
+        "--blender_exe", blender,
+        "--process_folder", process_folder,
+        "--glb_folder",  glb_folder, 
+        "--server_url", "http://localhost:5000",
+    ]         
+    print(f"Blender Listener started with command: {cmd}")
+    
+    WATCHER_PROCESS = subprocess.Popen(
+        cmd, 
+        stdout=subprocess.PIPE, 
+        stderr=subprocess.PIPE, 
+        text=True, 
+        bufsize=1)
+    print(f"Blender Listener started with PID: {WATCHER_PROCESS.pid}")
+  
+    socketio.start_background_task(relay, WATCHER_PROCESS.stdout, "OUT")
+    socketio.start_background_task(relay, WATCHER_PROCESS.stderr, "ERR")
+"""
+
+# deprecated
+"""
+def terminat_listener():
+    blender_progress(status="Terminating Blender Listener")
+    global WATCHER_PROCESS
+    if is_running(WATCHER_PROCESS):
+        WATCHER_PROCESS.terminate()
+        WATCHER_PROCESS.wait()
+        WATCHER_PROCESS = None
+        blender_progress(status="Blender Listener Termninated")
+"""

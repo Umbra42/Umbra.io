@@ -1,4 +1,4 @@
-import os, time, sys, socketio, subprocess, argparse, functools, builtins
+import os, time, sys, socketio, subprocess, argparse, functools, builtins, traceback, engineio
 from pathlib import Path
 
 print = functools.partial(builtins.print, flush=True)
@@ -34,10 +34,11 @@ def connect_socetio():
     sio = socketio.Client(logger=True, engineio_logger=True)
     try:
         print(f"Connecting to server at {SERVER_URL} ...", flush=True)
-        sio.connect(SERVER_URL, namespaces=["/upload"], wait=True, wait_timeout=30)
+        sio.connect(SERVER_URL, namespaces=["/upload"], socketio_path="/socket.io", wait=True, wait_timeout=30)
         print("Connected to server")
     except Exception as e:
         print(f"Failed to connect to server: {e}")
+        traceback.print_exc()
         sys.exit(1)
 
 def convert_file(blend_path, glb_path):
@@ -78,9 +79,10 @@ def process_new_files(PROCESS_FOLDER, GLB_FOLDER):
             }
             PROGRESS["processed"][filename] = entry
             processed.add(filename)
-            sio.emit("converted", PROGRESS, namespace="/upload")
         except Exception as e:
             print(f"Failed to process {blend_path}: {e}")
+    sio.emit("converted", PROGRESS, namespace="/upload")
+
     
 def emit_progress(**fields):
     fields.setdefault("task_id", PROGRESS["task_id"])

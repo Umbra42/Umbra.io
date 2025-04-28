@@ -59,3 +59,6 @@ if __name__ == '__main__':
         debug=True, 
         use_reloader=False
     )
+
+    logging.getLogger('werkzeug').setLevel(logging.WARNING)
+    logging.getLogger('eventlet.wsgi').setLevel(logging.WARNING)

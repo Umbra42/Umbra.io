@@ -1,12 +1,14 @@
 from flask import Blueprint, jsonify, current_app
-from tasks import init_blender, launch_listener, terminat_listener
+from tasks import init_blender
 from Upload import blender_progress
-from Blender import is_running
-from extensions import WATCHER_PROCESS
+
 
 
 blender_bp = Blueprint('blender', __name__)
-   
+
+
+# depricated
+'''
 @blender_bp.route("/start", methods=["POST"])
 def start_listener():
     print(" > /blender/start called")
@@ -32,3 +34,5 @@ def stop_listener():
     blender_progress(status="Stopping Blender Listener")
     terminat_listener()
     return jsonify({"status": "stopped", "message": "Blender Listener stopped"})
+'''
+
